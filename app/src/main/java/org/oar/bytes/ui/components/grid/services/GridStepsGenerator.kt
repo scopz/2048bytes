@@ -24,7 +24,7 @@ class GridStepsGenerator(
         val tile = tiles.findByPosition(step.positionTile)
 
         tiles.replaceAll {
-            if (it == tile) GridTile(tile.value, step.positionDest)
+            if (it == tile) GridTile(context, tile.value, step.positionDest, tile.level)
             else it
         }
     }
@@ -155,9 +155,9 @@ class GridStepsGenerator(
         return steps
     }
 
-    class MergeableGridTile(
+    inner class MergeableGridTile(
         value: SByte,
         pos: Position,
         var merged: Boolean = false
-    ) : GridTile(value, pos)
+    ) : GridTile(context, value, pos, 1)
 }

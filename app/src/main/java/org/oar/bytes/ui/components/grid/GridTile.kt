@@ -1,26 +1,47 @@
 package org.oar.bytes.ui.components.grid
 
+import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Rect
+import org.oar.bytes.R
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
+import org.oar.bytes.utils.NumbersExt.color
 import kotlin.math.abs
 
 open class GridTile(
+    private val context: Context,
     val value: SByte,
     val pos: Position,
+    var level: Int
 ): Cloneable {
+
+    private val levelColor
+        get() = when(level) {
+            1 -> R.color.shade01.color(context)
+            2 -> R.color.shade02.color(context)
+            3 -> R.color.shade03.color(context)
+            4 -> R.color.shade04.color(context)
+            5 -> R.color.shade05.color(context)
+            6 -> R.color.shade06.color(context)
+            7 -> R.color.shade07.color(context)
+            8 -> R.color.shade08.color(context)
+            9 -> R.color.shade09.color(context)
+            10 -> R.color.shade10.color(context)
+            else -> R.color.shade11.color(context)
+        }
+
     private val bumpColors = listOf(
-        Color.WHITE,
-        Color.YELLOW,
-        Color.GREEN,
-        Color.CYAN,
-        Color.BLUE,
-        Color.MAGENTA,
-        Color.RED,
-        Color.BLACK
+        R.color.bump01.color(context),
+        R.color.bump02.color(context),
+        R.color.bump03.color(context),
+        R.color.bump04.color(context),
+        R.color.bump05.color(context),
+        R.color.bump06.color(context),
+        R.color.bump07.color(context),
+        Color.BLACK,
     )
 
     private var activeColor = bumpColors.last()
@@ -68,12 +89,7 @@ open class GridTile(
                 pointX = destinyPointX
                 return false
             }
-
-            pointX = if (dx > 0) {
-                x + tileSpeed
-            } else {
-                x - tileSpeed
-            }
+            pointX = if (dx > 0) x + tileSpeed else x - tileSpeed
             return true
         }
 
@@ -84,16 +100,15 @@ open class GridTile(
                 pointY = destinyPointY
                 return false
             }
-
-            pointY = if (dy > 0) {
-                y + tileSpeed
-            } else {
-                y - tileSpeed
-            }
+            pointY = if (dy > 0) y + tileSpeed else y - tileSpeed
             return true
         }
 
         return false
+    }
+
+    fun advanceLevel() {
+        level++
     }
 
     fun draw(canvas: Canvas, size: Int) {
@@ -103,7 +118,7 @@ open class GridTile(
         val rect = Rect(left, top, left + size, top + size)
 
         val paint = Paint()
-        paint.color = activeColor
+        paint.color = if (activeColor == Color.BLACK) levelColor else activeColor
 
         val textPaint = Paint()
         textPaint.color = Color.WHITE
@@ -116,8 +131,8 @@ open class GridTile(
     }
 
     override fun toString(): String {
-        return "GridTile(value=$value, pos=[${pos.x}, ${pos.y}])"
+        return "GridTile(value=$value, pos=[${pos.x}, ${pos.y}, level=$level])"
     }
 
-    public override fun clone() = GridTile(value.clone(), pos)
+    public override fun clone() = GridTile(context, value.clone(), pos, level)
 }

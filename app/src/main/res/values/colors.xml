@@ -7,4 +7,27 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+
+    <color name="shade00">#DDD</color>
+    <color name="shade01">#BBB</color>
+    <color name="shade02">#AAA</color>
+    <color name="shade03">#999</color>
+    <color name="shade04">#888</color>
+    <color name="shade05">#777</color>
+    <color name="shade06">#666</color>
+    <color name="shade07">#555</color>
+    <color name="shade08">#444</color>
+    <color name="shade09">#333</color>
+    <color name="shade10">#222</color>
+    <color name="shade11">#111</color>
+
+    <color name="bump01">#FFF</color>
+    <color name="bump02">#FF7</color>
+    <color name="bump03">#7F7</color>
+    <color name="bump04">#7FF</color>
+    <color name="bump05">#77F</color>
+    <color name="bump06">#F7F</color>
+    <color name="bump07">#F77</color>
+
 </resources>

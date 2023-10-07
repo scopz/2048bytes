@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import org.oar.bytes.R
 import org.oar.bytes.features.animate.Animate
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.model.Position
@@ -16,6 +17,7 @@ import org.oar.bytes.ui.components.grid.model.StepMove
 import org.oar.bytes.ui.components.grid.services.GridStepsGenerator
 import org.oar.bytes.ui.components.grid.services.GridTouchControl
 import org.oar.bytes.ui.components.grid.services.GridTouchControl.Action.*
+import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import java.util.*
@@ -40,7 +42,7 @@ class Grid2048(
     private val bumpingTiles = mutableListOf<GridTile>()
 
     init {
-        setBackgroundColor(Color.LTGRAY)
+        setBackgroundColor(R.color.shade00.color(context))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -98,7 +100,7 @@ class Grid2048(
             val tile = tiles.findByPosition(position)
         } while(tile != null)
 
-        return GridTile(2048.sByte, position).also { tiles.add(it) }
+        return GridTile(context, 2048.sByte, position, 1).also { tiles.add(it) }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -183,6 +185,7 @@ class Grid2048(
                             tiles.findByPosition(stepMerge.positionDest)?.also { dest ->
                                 tiles.remove(tile)
                                 dest.value.doubleValue()
+                                dest.advanceLevel()
                                 bumpingTiles.add(dest)
                                 dest.prepareBumpAnimation()
                             }

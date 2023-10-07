@@ -1,5 +1,6 @@
 package org.oar.bytes.utils
 
+import android.content.Context
 import org.oar.bytes.model.SByte
 import java.math.BigDecimal
 import java.math.BigInteger
@@ -33,4 +34,6 @@ object NumbersExt {
     fun BigInteger.halveValue(): BigInteger = this.divide(TWO)
     fun BigInteger.doubleValue(times: Int): BigInteger = this.multiply(TWO.pow(times))
     fun BigInteger.halveValue(times: Int): BigInteger = this.divide(TWO.pow(times))
+
+    fun Int.color(context: Context) = context.getColor(this)
 }

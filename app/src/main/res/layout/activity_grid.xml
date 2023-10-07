@@ -7,7 +7,7 @@
     tools:context=".ui.GridActivity"
     android:orientation="vertical">
 
-    <org.oar.bytes.ui.components.grid.BytesGrid
+    <org.oar.bytes.ui.components.grid.Grid2048
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"/>

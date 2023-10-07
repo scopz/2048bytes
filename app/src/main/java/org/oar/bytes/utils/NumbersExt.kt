@@ -29,8 +29,8 @@ object NumbersExt {
         return this.divide(THOUSAND_BYTES_BD)
     }
 
-    fun BigInteger.doubleValue() = this.multiply(TWO)
-    fun BigInteger.halveValue() = this.divide(TWO)
-    fun BigInteger.doubleValue(times: Int) = this.multiply(TWO.pow(times))
-    fun BigInteger.halveValue(times: Int) = this.divide(TWO.pow(times))
+    fun BigInteger.doubleValue(): BigInteger = this.multiply(TWO)
+    fun BigInteger.halveValue(): BigInteger = this.divide(TWO)
+    fun BigInteger.doubleValue(times: Int): BigInteger = this.multiply(TWO.pow(times))
+    fun BigInteger.halveValue(times: Int): BigInteger = this.divide(TWO.pow(times))
 }

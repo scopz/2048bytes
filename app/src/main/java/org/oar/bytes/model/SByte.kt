@@ -5,13 +5,14 @@ import org.oar.bytes.utils.NumbersExt.canReduceScale
 import org.oar.bytes.utils.NumbersExt.doubleValue
 import org.oar.bytes.utils.NumbersExt.halveValue
 import org.oar.bytes.utils.NumbersExt.reduceScale
+import org.oar.bytes.utils.NumbersExt.sByte
 import java.math.BigInteger
 import java.math.RoundingMode
 import java.text.DecimalFormat
 
 data class SByte (
     private var value: BigInteger = 0.toBigInteger()
-) {
+): Cloneable {
     companion object {
         val decimalFormat = DecimalFormat("0.##").apply {
             roundingMode = RoundingMode.HALF_UP
@@ -60,6 +61,7 @@ data class SByte (
         return value == (other as SByte).value
     }
 
+    public override fun clone() = value.sByte
     override fun hashCode() = value.hashCode()
     operator fun plus(byte: SByte) = SByte(value.add(byte.value))
     operator fun minus(byte: SByte) = SByte(value.subtract(byte.value))

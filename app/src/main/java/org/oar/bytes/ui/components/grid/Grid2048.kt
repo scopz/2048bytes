@@ -27,6 +27,10 @@ class Grid2048(
     attr: AttributeSet? = null
 ) : View(context, attr), Animate {
 
+    var gridLevel = 1
+    val baseByteValue
+        get() = 1.sByte.double(gridLevel)
+
     private var tileSize: Int = 0
     private var tileSpeed: Int = 0
     private val tiles = TileList<GridTile>()
@@ -100,7 +104,10 @@ class Grid2048(
             val tile = tiles.findByPosition(position)
         } while(tile != null)
 
-        return GridTile(context, 2048.sByte, position, 1).also { tiles.add(it) }
+        return if (rnd.nextInt(10) < 1)
+            GridTile(context, baseByteValue.double(), position, 2).also { tiles.add(it) }
+        else
+            GridTile(context, baseByteValue.clone(), position, 1).also { tiles.add(it) }
     }
 
     @SuppressLint("ClickableViewAccessibility")

@@ -55,6 +55,11 @@ data class SByte (
         value = value.halveValue(times)
     }
 
+    fun double() = value.doubleValue().sByte
+    fun double(times: Int) = value.doubleValue(times).sByte
+    fun halve() = value.halveValue().sByte
+    fun halve(times: Int) = value.halveValue(times).sByte
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false

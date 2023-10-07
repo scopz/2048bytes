@@ -8,6 +8,9 @@ object Animator {
     private var thread: Framer? = null
 
     fun addAndStart(animation: Animate) {
+        val exists = animations.any { it.animation == animation }
+        if (exists) return
+
         AnimationWrapper(
             System.currentTimeMillis(),
             animation

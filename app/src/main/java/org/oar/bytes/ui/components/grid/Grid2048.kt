@@ -103,7 +103,7 @@ class Grid2048(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (pendingSteps.isNotEmpty()) {
+        if (pendingSteps.isNotEmpty() && movingTiles.isNotEmpty()) {
             return super.onTouchEvent(event)
         }
         if (gameOver) {
@@ -143,8 +143,6 @@ class Grid2048(
     }
 
     override fun start() {
-        movingTiles.clear()
-        bumpingTiles.clear()
         pendingGenerateNewTile = true
         pendingSteps.forEach {
             when(it) {
@@ -194,7 +192,7 @@ class Grid2048(
                 !cont
             }
 
-            if (pendingGenerateNewTile && movingTiles.isEmpty() && bumpingTiles.isEmpty()) {
+            if (pendingGenerateNewTile && movingTiles.isEmpty()) {
                 pendingGenerateNewTile = false
                 generateRandom().also {
                     it.prepareBumpAnimation()

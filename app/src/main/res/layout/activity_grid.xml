@@ -10,13 +10,11 @@
     tools:context=".ui.GridActivity"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/stored"
+    <org.oar.bytes.ui.common.components.levelpanel.LevelPanelGrid
+        android:id="@+id/levelPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingVertical="32dp"
-        android:textSize="32sp" />
+        android:paddingVertical="32dp" />
 
     <org.oar.bytes.ui.common.components.grid.Grid2048View
         android:id="@+id/grid"

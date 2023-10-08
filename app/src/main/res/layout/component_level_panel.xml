@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="horizontal" >
+
+    <TextView
+        android:id="@+id/levelUpButton"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:background="@color/shade00"
+        android:gravity="center"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_weight="1"
+        android:orientation="vertical" >
+
+        <TextView
+            android:id="@+id/stored"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:textSize="32sp" />
+
+        <SeekBar
+            android:id="@+id/seekBar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:max="300"
+            android:progress="0" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/capacityUpButton"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:background="@color/shade00"
+        android:gravity="center"
+        android:text="C"
+        android:textSize="16sp" />
+
+</LinearLayout>

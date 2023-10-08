@@ -18,6 +18,7 @@ import org.oar.bytes.ui.common.components.grid.services.GridStepsGenerator
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControl
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.*
 import org.oar.bytes.utils.Constants
+import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.NumbersExt.sByte
@@ -30,9 +31,8 @@ class Grid2048View(
     attr: AttributeSet? = null
 ) : View(context, attr), Animate {
 
-    var gridLevel = 1
     val baseByteValue
-        get() = 1.sByte.double(gridLevel-1)
+        get() = 1.sByte.double(Data.gridLevel-1)
 
     private var tileSize: Int = 0
     private var tileSpeed: Int = 0
@@ -82,8 +82,7 @@ class Grid2048View(
         postInvalidate()
     }
 
-    fun advanceLevel() {
-        gridLevel++
+    fun advancedGridLevel() {
         tiles.forEach {
             if (it.level == 1) {
                 it.advancedGridLevel()
@@ -104,12 +103,10 @@ class Grid2048View(
                 .map { it.toJson() }
                 .jsonArray()
             put("tiles", arrTiles)
-            put("gridLevel", gridLevel)
         }
     }
 
     fun fromJson(json: JSONObject) {
-        gridLevel = json.getInt("gridLevel")
         val baseByte = baseByteValue
 
         tiles.clear()
@@ -223,6 +220,14 @@ class Grid2048View(
                 }
             }
         }
+
+        onProduceByteListener?.also { listener ->
+            pendingSteps
+                .filterIsInstance<StepMerge>()
+                .map { tiles.findByPosition(it.positionBase)!! }
+                .fold(0.sByte) { acc, it -> acc + it.value }
+                .also { if (!it.isZero) listener.accept(it.double()) }
+        }
     }
 
     override fun updateAnimation(moment: Long): Boolean {
@@ -272,14 +277,6 @@ class Grid2048View(
     }
 
     override fun end(moment: Long) {
-        onProduceByteListener?.also { listener ->
-            pendingSteps
-                .filterIsInstance<StepMerge>()
-                .map { tiles.findByPosition(it.positionDest)!! }
-                .fold(0.sByte) { acc, it -> acc + it.value }
-                .also { if (!it.isZero) listener.accept(it) }
-        }
-
         pendingSteps = listOf()
         pendingGenerateNewTile = false
 

@@ -7,6 +7,8 @@ import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.grid.Grid2048View
+import org.oar.bytes.ui.common.components.levelpanel.LevelPanelGrid
+import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.SaveStateUtils.hasState
 import org.oar.bytes.utils.SaveStateUtils.loadState
@@ -15,25 +17,20 @@ import org.oar.bytes.utils.SaveStateUtils.saveState
 class GridActivity : AppCompatActivity() {
 
     private val grid by lazy { findViewById<Grid2048View>(R.id.grid) }
-    private val stored by lazy { findViewById<TextView>(R.id.stored) }
-
-    private var storedValue = 0.sByte
+    private val levelPanel by lazy { findViewById<LevelPanelGrid>(R.id.levelPanel) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         InitialLoad.loadData(this)
         setContentView(R.layout.activity_grid)
 
-        stored.text = storedValue.toString()
 
         grid.setOnProduceByteListener {
-            storedValue.add(it)
-            stored.text = storedValue.toString()
+            levelPanel.addBytes(it)
         }
 
         grid.setOnGameOverListener {
-            storedValue.substract(storedValue)
-            stored.text = storedValue.toString()
+            levelPanel.storedValue = 0.sByte
             grid.restart()
         }
 
@@ -47,23 +44,23 @@ class GridActivity : AppCompatActivity() {
             }
         }
 
-        stored.setOnClickListener {
-            grid.advanceLevel()
+        levelPanel.setLevelUpListener {
+            grid.advancedGridLevel()
         }
     }
 
     override fun onPause() {
         val json = grid.toJson()
-        json.put("storedValue", storedValue.value.toString())
+        levelPanel.appendToJson(json)
+        json.put("gridLevel", Data.gridLevel)
 
         saveState(json)
         super.onPause()
     }
 
     private fun reloadState(json: JSONObject) {
-        storedValue = json.getString("storedValue").sByte
-        stored.text = storedValue.toString()
-
+        Data.gridLevel = json.getInt("gridLevel")
+        levelPanel.fromJson(json)
         grid.fromJson(json)
     }
 }

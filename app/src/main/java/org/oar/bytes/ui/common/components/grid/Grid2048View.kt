@@ -1,35 +1,38 @@
-package org.oar.bytes.ui.components.grid
+package org.oar.bytes.ui.common.components.grid
 
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import org.oar.bytes.R
+import org.json.JSONObject
 import org.oar.bytes.features.animate.Animate
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.model.Position
-import org.oar.bytes.ui.components.grid.model.StepAction
-import org.oar.bytes.ui.components.grid.model.StepMerge
-import org.oar.bytes.ui.components.grid.model.StepMove
-import org.oar.bytes.ui.components.grid.services.GridStepsGenerator
-import org.oar.bytes.ui.components.grid.services.GridTouchControl
-import org.oar.bytes.ui.components.grid.services.GridTouchControl.Action.*
-import org.oar.bytes.utils.NumbersExt.color
+import org.oar.bytes.model.SByte
+import org.oar.bytes.ui.common.components.grid.model.StepAction
+import org.oar.bytes.ui.common.components.grid.model.StepMerge
+import org.oar.bytes.ui.common.components.grid.model.StepMove
+import org.oar.bytes.ui.common.components.grid.services.GridStepsGenerator
+import org.oar.bytes.ui.common.components.grid.services.GridTouchControl
+import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.*
+import org.oar.bytes.utils.Constants
+import org.oar.bytes.utils.JsonExt.jsonArray
+import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import java.util.*
+import java.util.function.Consumer
 
-class Grid2048(
+class Grid2048View(
     context: Context,
     attr: AttributeSet? = null
 ) : View(context, attr), Animate {
 
     var gridLevel = 1
     val baseByteValue
-        get() = 1.sByte.double(gridLevel)
+        get() = 1.sByte.double(gridLevel-1)
 
     private var tileSize: Int = 0
     private var tileSpeed: Int = 0
@@ -42,11 +45,21 @@ class Grid2048(
     // animation
     private var pendingSteps = listOf<StepAction>()
     private var pendingGenerateNewTile = false
-    private val movingTiles = mutableListOf<GridTile>()
-    private val bumpingTiles = mutableListOf<GridTile>()
+    private val movingTiles = mutableSetOf<GridTile>()
+    private val bumpingTiles = mutableSetOf<GridTile>()
+
+    // listeners
+    private var onProduceByteListener: Consumer<SByte>? = null
+    fun setOnProduceByteListener(listener: Consumer<SByte>) { onProduceByteListener = listener }
+
+    private var onGameOverListener: Runnable? = null
+    fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
+
+    private var onReadyListener: Runnable? = null
+    fun setOnReadyListener(listener: Runnable) { onReadyListener = listener }
 
     init {
-        setBackgroundColor(R.color.shade00.color(context))
+        setBackgroundColor(Constants.SHADE_COLORS[0])
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
@@ -60,13 +73,57 @@ class Grid2048(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        initScenario()
+        onReadyListener?.run()
     }
 
-    private fun initScenario() {
-        repeat(4) {
-            generateRandom()
+    fun restart() {
+        tiles.clear()
+        repeat(4) { generateRandom() }
+        postInvalidate()
+    }
+
+    fun advanceLevel() {
+        gridLevel++
+        tiles.forEach {
+            if (it.level == 1) {
+                it.advancedGridLevel()
+            } else {
+                it.level--
+            }
+            it.prepareBumpAnimation()
         }
+
+        bumpingTiles.addAll(tiles)
+        pendingGenerateNewTile = false
+        Animator.addAndStart(this)
+    }
+
+    fun toJson(): JSONObject {
+        return JSONObject().apply {
+            val arrTiles = tiles
+                .map { it.toJson() }
+                .jsonArray()
+            put("tiles", arrTiles)
+            put("gridLevel", gridLevel)
+        }
+    }
+
+    fun fromJson(json: JSONObject) {
+        gridLevel = json.getInt("gridLevel")
+        val baseByte = baseByteValue
+
+        tiles.clear()
+        json.getJSONArray("tiles")
+            .mapJsonObject { tileObj ->
+                val tileLevel = tileObj.getInt("level")
+                val pos = Position(tileObj.getInt("x"), tileObj.getInt("y"))
+                val value = baseByte.double(tileLevel-1)
+
+                GridTile(context, value, pos, tileLevel, tileSize)
+            }
+            .also { tiles.addAll(it) }
+
+        postInvalidate()
     }
 
     private val gameOver: Boolean
@@ -105,36 +162,36 @@ class Grid2048(
         } while(tile != null)
 
         return if (rnd.nextInt(10) < 1)
-            GridTile(context, baseByteValue.double(), position, 2).also { tiles.add(it) }
+            GridTile(context, baseByteValue.double(), position, 2, tileSize).also { tiles.add(it) }
         else
-            GridTile(context, baseByteValue.clone(), position, 1).also { tiles.add(it) }
+            GridTile(context, baseByteValue.clone(), position, 1, tileSize).also { tiles.add(it) }
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (pendingSteps.isNotEmpty() && movingTiles.isNotEmpty()) {
+        if (pendingSteps.isNotEmpty() && movingTiles.isNotEmpty() || gameOver) {
             return super.onTouchEvent(event)
         }
-        if (gameOver) {
-            tiles.clear()
-            initScenario()
-            return super.onTouchEvent(event)
-        }
+
         when(touchControl.onTouchEvent(event)) {
             MOVE_RIGHT -> {
                 pendingSteps = stepsGenerator.moveRight(tiles)
+                pendingGenerateNewTile = true
                 if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
             }
             MOVE_LEFT -> {
                 pendingSteps = stepsGenerator.moveLeft(tiles)
+                pendingGenerateNewTile = true
                 if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
             }
             MOVE_DOWN -> {
                 pendingSteps = stepsGenerator.moveDown(tiles)
+                pendingGenerateNewTile = true
                 if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
             }
             MOVE_UP -> {
                 pendingSteps = stepsGenerator.moveUp(tiles)
+                pendingGenerateNewTile = true
                 if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
             }
             else -> {}
@@ -146,24 +203,23 @@ class Grid2048(
         super.onDraw(canvas)
         synchronized(tiles) {
             canvas?.let {
-                tiles.forEach { it.draw(canvas, tileSize) }
+                tiles.forEach { it.draw(canvas) }
             }
         }
     }
 
     override fun start() {
-        pendingGenerateNewTile = true
         pendingSteps.forEach {
             when(it) {
                 is StepMove -> {
                     tiles.findByPosition(it.positionTile)
                         ?.apply { movingTiles.add(this) }
-                        ?.prepareStepAnimation(tileSize, it.positionDest, tileSpeed)
+                        ?.prepareStepAnimation(it.positionDest, tileSpeed)
                 }
                 is StepMerge -> {
                     tiles.findByPosition(it.positionBase)
                         ?.apply { movingTiles.add(this) }
-                        ?.prepareStepAnimation(tileSize, it.positionDest, tileSpeed)
+                        ?.prepareStepAnimation(it.positionDest, tileSpeed)
                 }
             }
         }
@@ -191,8 +247,7 @@ class Grid2048(
                         stepMerge?.also {
                             tiles.findByPosition(stepMerge.positionDest)?.also { dest ->
                                 tiles.remove(tile)
-                                dest.value.doubleValue()
-                                dest.advanceLevel()
+                                dest.advanceTileLevel()
                                 bumpingTiles.add(dest)
                                 dest.prepareBumpAnimation()
                             }
@@ -217,7 +272,19 @@ class Grid2048(
     }
 
     override fun end(moment: Long) {
+        onProduceByteListener?.also { listener ->
+            pendingSteps
+                .filterIsInstance<StepMerge>()
+                .map { tiles.findByPosition(it.positionDest)!! }
+                .fold(0.sByte) { acc, it -> acc + it.value }
+                .also { if (!it.isZero) listener.accept(it) }
+        }
+
         pendingSteps = listOf()
         pendingGenerateNewTile = false
+
+        if (gameOver) {
+            onGameOverListener?.run()
+        }
     }
 }

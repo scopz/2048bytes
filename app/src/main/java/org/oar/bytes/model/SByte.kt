@@ -11,8 +11,9 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 
 data class SByte (
-    private var value: BigInteger = 0.toBigInteger()
+    var value: BigInteger = 0.toBigInteger()
 ): Cloneable {
+
     companion object {
         val decimalFormat = DecimalFormat("0.##").apply {
             roundingMode = RoundingMode.HALF_UP
@@ -20,6 +21,11 @@ data class SByte (
     }
 
     override fun toString(): String {
+        val stringParts = toStringSplit()
+        return "${stringParts[0]} ${stringParts[1]}"
+    }
+
+    fun toStringSplit(): Array<String> {
         var index = 0
         var currentVal = value.toBigDecimal()
 
@@ -28,8 +34,11 @@ data class SByte (
             index++
         }
 
-        return "${decimalFormat.format(currentVal)} ${SCALE_BYTE_LETTER[index]}"
+        return arrayOf(decimalFormat.format(currentVal), SCALE_BYTE_LETTER[index])
     }
+
+    val isZero: Boolean
+        get() = value.compareTo(BigInteger.ZERO) == 0
 
     fun add(byte: SByte) {
         value = (this + byte).value

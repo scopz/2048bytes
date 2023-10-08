@@ -1,4 +1,4 @@
-package org.oar.bytes.ui.components.grid.services
+package org.oar.bytes.ui.common.components.grid.services
 
 import android.content.Context
 import android.view.MotionEvent

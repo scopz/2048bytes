@@ -1,4 +1,4 @@
-package org.oar.bytes.ui.components.grid
+package org.oar.bytes.ui.common.components.grid
 
 import org.oar.bytes.model.Position
 

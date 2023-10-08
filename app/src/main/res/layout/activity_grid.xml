@@ -4,13 +4,23 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center"
+    android:layout_marginVertical="32dp"
+    android:layout_marginHorizontal="16dp"
+
     tools:context=".ui.GridActivity"
     android:orientation="vertical" >
 
-    <org.oar.bytes.ui.components.grid.Grid2048
+    <TextView
+        android:id="@+id/stored"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="10dp" />
+        android:gravity="center_horizontal"
+        android:paddingVertical="32dp"
+        android:textSize="32sp" />
+
+    <org.oar.bytes.ui.common.components.grid.Grid2048View
+        android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

@@ -1,13 +1,13 @@
-package org.oar.bytes.ui.components.grid.services
+package org.oar.bytes.ui.common.components.grid.services
 
 import android.content.Context
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
-import org.oar.bytes.ui.components.grid.GridTile
-import org.oar.bytes.ui.components.grid.TileList
-import org.oar.bytes.ui.components.grid.model.StepAction
-import org.oar.bytes.ui.components.grid.model.StepMerge
-import org.oar.bytes.ui.components.grid.model.StepMove
+import org.oar.bytes.ui.common.components.grid.GridTile
+import org.oar.bytes.ui.common.components.grid.TileList
+import org.oar.bytes.ui.common.components.grid.model.StepAction
+import org.oar.bytes.ui.common.components.grid.model.StepMerge
+import org.oar.bytes.ui.common.components.grid.model.StepMove
 
 class GridStepsGenerator(
     val context: Context
@@ -24,7 +24,7 @@ class GridStepsGenerator(
         val tile = tiles.findByPosition(step.positionTile)
 
         tiles.replaceAll {
-            if (it == tile) GridTile(context, tile.value, step.positionDest, tile.level)
+            if (it == tile) GridTile(context, tile.value, step.positionDest, tile.level, tile.size)
             else it
         }
     }
@@ -159,5 +159,5 @@ class GridStepsGenerator(
         value: SByte,
         pos: Position,
         var merged: Boolean = false
-    ) : GridTile(context, value, pos, 1)
+    ) : GridTile(context, value, pos, 1, 0)
 }

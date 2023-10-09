@@ -30,4 +30,7 @@
     <color name="bump06">#F7F</color>
     <color name="bump07">#F77</color>
 
+    <color name="capacityColor">#9CE0FF</color>
+    <color name="levelColor">#FFCAB2</color>
+
 </resources>

@@ -1,13 +1,12 @@
 package org.oar.bytes.ui
 
 import android.os.Bundle
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.InitialLoad
+import org.oar.bytes.ui.common.components.LevelPanelGrid
 import org.oar.bytes.ui.common.components.grid.Grid2048View
-import org.oar.bytes.ui.common.components.levelpanel.LevelPanelGrid
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.SaveStateUtils.hasState

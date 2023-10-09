@@ -80,5 +80,6 @@ data class SByte (
     operator fun plus(byte: SByte) = SByte(value.add(byte.value))
     operator fun minus(byte: SByte) = SByte(value.subtract(byte.value))
     operator fun times(byte: SByte) = SByte(value.multiply(byte.value))
+    operator fun div(byte: SByte) = SByte(value.divide(byte.value))
     operator fun compareTo(byte: SByte) = value.compareTo(byte.value)
 }

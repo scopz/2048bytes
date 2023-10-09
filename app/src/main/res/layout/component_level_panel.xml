@@ -14,29 +14,12 @@
         android:gravity="center"
         android:textSize="16sp" />
 
-    <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
+    <org.oar.bytes.ui.common.components.ProgressBarView
+        android:id="@+id/progressBar"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_height="46dp"
         android:layout_weight="1"
-        android:orientation="vertical" >
-
-        <TextView
-            android:id="@+id/stored"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:textSize="32sp" />
-
-        <SeekBar
-            android:id="@+id/seekBar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:max="300"
-            android:progress="0" />
-
-    </LinearLayout>
+        android:layout_marginHorizontal="16dp"/>
 
     <TextView
         android:id="@+id/capacityUpButton"

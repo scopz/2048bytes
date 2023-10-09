@@ -10,7 +10,7 @@
     tools:context=".ui.GridActivity"
     android:orientation="vertical" >
 
-    <org.oar.bytes.ui.common.components.levelpanel.LevelPanelGrid
+    <org.oar.bytes.ui.common.components.LevelPanelGrid
         android:id="@+id/levelPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

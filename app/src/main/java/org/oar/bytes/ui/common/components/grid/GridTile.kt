@@ -37,7 +37,7 @@ open class GridTile(
 
     private var tileSpeed = 1
 
-    private val view: View = View.inflate(context, R.layout.grid_tile, null)
+    private val view: View = View.inflate(context, R.layout.component_grid_tile, null)
     private val valueView = view.findViewById<TextView>(R.id.value)
 
     init {

@@ -3,7 +3,7 @@ package org.oar.bytes.model
 data class Position(
     val x: Int,
     val y: Int
-) {
+): Comparable<Position> {
 
     init {
         if (x < 0 || x > 3 || y < 0 || y > 3) {
@@ -34,5 +34,10 @@ data class Position(
 
     val botPositions: List<Position>
         get() = (y+1 until 4).map { Position(x, it) }
+
+    override fun compareTo(other: Position): Int {
+        val xCompared = x.compareTo(other.x)
+        return if (xCompared == 0) y.compareTo(other.y) else xCompared
+    }
 }
 

@@ -1,45 +1,139 @@
 package org.oar.bytes.features.animate
 
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
+import java.util.function.BiConsumer
 import kotlin.math.roundToLong
 
 object Animator {
+    const val END_ANIMATION = 1
+    const val BLOCK_CHANGED = 2
+
     private val animations = mutableListOf<AnimationWrapper>()
     private var thread: Framer? = null
 
-    fun addAndStart(animation: Animate) {
-        val exists = animations.any { it.animation == animation }
-        if (exists) return
+    val blockedGrid
+        get() = animations.any { it.animation.blockingGrid }
 
+    private val listeners = mutableListOf<AnimationListener>()
+
+    fun join(list: List<AnimationChain>, consumer: BiConsumer<Int, Boolean>) {
+        synchronized(listeners) {
+            listeners.add(AnimationListener(list, consumer))
+        }
+    }
+
+    fun addAndStart(chain: AnimationChain) {
+        if (!chain.hasAnimations()) return
+        val exists = animations.firstOrNull { it.animation.ref == chain.ref }
+        if (exists != null) return
+
+        val animation = chain.next()!!
         AnimationWrapper(
+            chain,
             System.currentTimeMillis(),
             animation
-        ).also {
-            animations.add(it)
-        }
+        ).also { animations.add(it) }
 
-        animation.start()
+        animation.startAnimation()
+        if (thread == null) {
+            thread = Framer().apply { start() }
+        }
+    }
+
+    fun addAndStart(chains: List<AnimationChain>) {
+        val addChains = chains.filter { it.hasAnimations() }
+        if (addChains.isEmpty()) return
+
+        addChains
+            .onEach {
+                val found = animations.indexOfFirst { wrap -> wrap.animation.ref == it.ref }
+                if (found >= 0) {
+                    animations.removeAt(found)
+                }
+            }
+            .map { chain ->
+                val anim = chain.next()!!
+                anim.startAnimation()
+                AnimationWrapper(chain, System.currentTimeMillis(), anim)
+            }
+            .also { animations.addAll(it) }
+
         if (thread == null) {
             thread = Framer().apply { start() }
         }
     }
 
     private fun update() {
-        val currentTime = System.currentTimeMillis()
-        animations.removeIf {
-            val moment = currentTime - it.startTime
-            val remove = !it.animation.updateAnimation(moment)
-            if (remove) {
-                it.animation.end(moment)
+        val removeList = mutableListOf<AnimationWrapper>()
+
+        animations.toList().forEach {
+            val animationEnded = if (it.started) {
+                !it.animation.nextAnimation()
+            } else {
+                it.started = true
+                false
             }
-            remove
+
+            if (animationEnded) {
+                it.animation.endAnimation()
+                it.animation.applyAnimation()
+
+                val nextAnimation = it.chain.next()
+
+                nextAnimation?.apply {
+                    it.animation = this
+                    startAnimation()
+                    applyAnimation()
+                }
+
+                if (nextAnimation == null) {
+                    it.chain.end()
+                    removeList.add(it)
+                }
+
+            } else {
+                it.animation.applyAnimation()
+            }
         }
+
+        animations.removeAll(removeList)
+
+        checkListeners()
     }
 
-    private data class AnimationWrapper(
-        val startTime: Long,
-        val animation: Animate
-    )
+    private fun checkListeners() {
+        if (listeners.isNotEmpty()) {
+            synchronized(listeners) {
+                listeners.removeIf { listener ->
+                    val anims = animations.filter { listener.animations.contains(it.chain) }
+
+                    if (anims.isEmpty()) {
+                        listener.consumer.accept(END_ANIMATION, true)
+                        if (listener.blocked) {
+                            listener.consumer.accept(BLOCK_CHANGED, false)
+                        }
+                        true
+
+                    } else {
+                        if (listener.blocked) {
+                            val noBlockers = anims.none { it.animation.blockingGrid }
+                            if (noBlockers) {
+                                listener.blocked = false
+                                listener.consumer.accept(BLOCK_CHANGED, false)
+                            }
+                        } else {
+                            val anyBlocker = anims.any { it.animation.blockingGrid }
+                            if (anyBlocker) {
+                                listener.blocked = true
+                                listener.consumer.accept(BLOCK_CHANGED, true)
+                            }
+                        }
+                        false
+                    }
+                }
+            }
+        }
+    }
 
     private class Framer : Thread() {
         override fun run() {

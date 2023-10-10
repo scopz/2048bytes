@@ -1,8 +1,11 @@
 package org.oar.bytes.ui.common.components.grid.services
 
-import android.content.Context
+import android.view.View
+import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
+import org.oar.bytes.ui.animations.BumpTileAnimation
+import org.oar.bytes.ui.animations.MoveTileAnimation
 import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.grid.TileList
 import org.oar.bytes.ui.common.components.grid.model.StepAction
@@ -10,44 +13,30 @@ import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
 
 class GridStepsGenerator(
-    val context: Context
+    val parent: View
 ) {
+    var speed: Int = 30
 
-    fun applyStep(tiles: TileList<GridTile>, step: StepAction) {
-        when(step) {
-            is StepMove -> moveTile(tiles, step)
-            is StepMerge -> mergeTile(tiles, step)
-        }
+    fun addMoveAnimation(
+        tile: GridTile,
+        pos: Position,
+        chain: AnimationChain = AnimationChain(tile)
+    ): AnimationChain {
+        return chain
+            .next { MoveTileAnimation(tile, pos, speed) }
+            .end { tile.pos = pos }
     }
 
-    private fun moveTile(tiles: TileList<GridTile>, step: StepMove) {
-        val tile = tiles.findByPosition(step.positionTile)
-
-        tiles.replaceAll {
-            if (it == tile) GridTile(context, tile.value, step.positionDest, tile.level, tile.size)
-            else it
-        }
-    }
-
-    private fun mergeTile(tiles: TileList<GridTile>, step: StepMerge) {
-        val tileBase = tiles.findByPosition(step.positionBase)
-        val tileDest = tiles.findByPosition(step.positionDest)
-
-        tiles.removeIf { it == tileBase }
-        tiles.forEach {
-            if (it == tileDest) {
-                it.value.doubleValue()
-            }
-        }
+    fun addBumpAnimation(
+        tile: GridTile,
+        chain: AnimationChain = AnimationChain(tile)
+    ): AnimationChain {
+        return chain.next { BumpTileAnimation(tile) }
     }
 
     private fun internalMoveTile(tiles: TileList<MergeableGridTile>, step: StepMove) {
         val tile = tiles.findByPosition(step.positionTile)
-
-        tiles.replaceAll {
-            if (it == tile) MergeableGridTile(tile.value, step.positionDest)
-            else it
-        }
+        tile?.pos = step.positionDest
     }
 
     private fun internalMergeTile(tiles: TileList<MergeableGridTile>, step: StepMerge) {
@@ -65,45 +54,61 @@ class GridStepsGenerator(
 
     private fun createWorkableList(tiles: TileList<GridTile>): TileList<MergeableGridTile> {
         val workableList = TileList<MergeableGridTile>()
-        tiles.map { MergeableGridTile(it.value.clone(), it.pos) }
+        tiles.map { MergeableGridTile(it, it.value.clone(), it.pos) }
             .also { workableList.addAll(it) }
         return workableList
     }
 
-    fun moveLeft(tiles: TileList<GridTile>) = internalMove(
+    fun moveLeft(
+        tiles: TileList<GridTile>,
+        steps: MutableList<StepAction> = mutableListOf()
+    ) = internalMove(
         tiles,
         rowsProgression = (0 until 4),
         columnsProgression = (1 until 4),
         watchPositions = { it.leftPositions },
         prevPosition = { it.right },
-        rootPosition = { x, y -> Position(0, y)}
+        rootPosition = { x, y -> Position(0, y)},
+        steps = steps,
     )
 
-    fun moveRight(tiles: TileList<GridTile>) = internalMove(
+    fun moveRight(
+        tiles: TileList<GridTile>,
+        steps: MutableList<StepAction> = mutableListOf()
+    ) = internalMove(
         tiles,
         rowsProgression = (0 until 4),
         columnsProgression = (0 until 3).reversed(),
         watchPositions = { it.rightPositions },
         prevPosition = { it.left },
-        rootPosition = { x, y -> Position(3, y)}
+        rootPosition = { x, y -> Position(3, y)},
+        steps = steps,
     )
 
-    fun moveUp(tiles: TileList<GridTile>) = internalMove(
+    fun moveUp(
+        tiles: TileList<GridTile>,
+        steps: MutableList<StepAction> = mutableListOf()
+    ) = internalMove(
         tiles,
         rowsProgression = (1 until 4),
         columnsProgression = (0 until 4),
         watchPositions = { it.topPositions },
         prevPosition = { it.bottom },
-        rootPosition = { x, y -> Position(x, 0)}
+        rootPosition = { x, y -> Position(x, 0)},
+        steps = steps,
     )
 
-    fun moveDown(tiles: TileList<GridTile>) = internalMove(
+    fun moveDown(
+        tiles: TileList<GridTile>,
+        steps: MutableList<StepAction> = mutableListOf()
+    ) = internalMove(
         tiles,
         rowsProgression = (0 until 3).reversed(),
         columnsProgression = (0 until 4),
         watchPositions = { it.botPositions },
         prevPosition = { it.top },
-        rootPosition = { x, y -> Position(x, 3)}
+        rootPosition = { x, y -> Position(x, 3)},
+        steps = steps,
     )
 
     private fun internalMove(
@@ -112,21 +117,41 @@ class GridStepsGenerator(
         columnsProgression: IntProgression,
         watchPositions: (Position) -> List<Position>,
         prevPosition: (Position) -> Position?,
-        rootPosition: (Int, Int) -> Position
-    ): List<StepAction> {
-        val steps = mutableListOf<StepAction>()
-        val modifyingTiles = createWorkableList(tiles)
+        rootPosition: (Int, Int) -> Position,
+        steps: MutableList<StepAction>
+    ): List<AnimationChain> {
 
-        fun move(tile: GridTile, pos: Position) {
+        val modifyingTiles = createWorkableList(tiles)
+        val animations = tiles.associateWith { AnimationChain(it) }
+
+        fun move(tile: MergeableGridTile, pos: Position) {
             val step = StepMove(tile.pos, pos)
-            steps.add(step)
             internalMoveTile(modifyingTiles, step)
+            steps.add(step)
+
+            val tileOriginal = tile.originalTile
+
+            animations[tileOriginal]
+                ?.also { addMoveAnimation(tileOriginal, pos, it) }
         }
 
-        fun merge(tileBase: GridTile, tileDest: GridTile) {
+        fun merge(tileBase: MergeableGridTile, tileDest: MergeableGridTile) {
             val step = StepMerge(tileBase.pos, tileDest.pos)
-            steps.add(step)
             internalMergeTile(modifyingTiles, step)
+            steps.add(step)
+
+            val base = tileBase.originalTile
+            val dest = tileDest.originalTile
+
+            animations[base]
+                ?.next { MoveTileAnimation(base, tileDest.pos, speed) }
+                ?.next {
+                    tiles.remove(dest)
+                    base.pos = dest.pos
+                    base.advanceTileLevel()
+                    it["mergedValue"] = base.value
+                    BumpTileAnimation(base)
+                }
         }
 
         rowsProgression.forEach { row ->
@@ -152,12 +177,13 @@ class GridStepsGenerator(
             }
         }
 
-        return steps
+        return animations.values.filter { it.hasAnimations() }
     }
 
     inner class MergeableGridTile(
+        val originalTile: GridTile,
         value: SByte,
         pos: Position,
         var merged: Boolean = false
-    ) : GridTile(context, value, pos, 1, 0)
+    ) : GridTile(parent, value, pos, 1, 0)
 }

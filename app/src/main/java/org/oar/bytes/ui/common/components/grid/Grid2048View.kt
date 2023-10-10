@@ -7,10 +7,11 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import org.json.JSONObject
-import org.oar.bytes.features.animate.Animate
+import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
+import org.oar.bytes.ui.animations.BumpTileAnimation
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
@@ -29,24 +30,25 @@ import java.util.function.Consumer
 class Grid2048View(
     context: Context,
     attr: AttributeSet? = null
-) : View(context, attr), Animate {
+) : View(context, attr) {
 
-    val baseByteValue
+    private val baseByteValue
         get() = 1.sByte.double(Data.gridLevel-1)
 
     private var tileSize: Int = 0
-    private var tileSpeed: Int = 0
     private val tiles = TileList<GridTile>()
+    private var lastSteps = listOf<StepAction>()
+    private var lastSpawn: Position? = null
+
+    var paused = false
+        set(value) {
+            field = value
+            alpha = if (value) .5f else 1f
+        }
 
     // services
-    private val touchControl = GridTouchControl(context)
-    private val stepsGenerator = GridStepsGenerator(context)
-
-    // animation
-    private var pendingSteps = listOf<StepAction>()
-    private var pendingGenerateNewTile = false
-    private val movingTiles = mutableSetOf<GridTile>()
-    private val bumpingTiles = mutableSetOf<GridTile>()
+    private val touchControl = GridTouchControl(this)
+    private val stepsGenerator = GridStepsGenerator(this)
 
     // listeners
     private var onProduceByteListener: Consumer<SByte>? = null
@@ -67,7 +69,7 @@ class Grid2048View(
 
         val width = measuredWidth
         tileSize = width / 4
-        tileSpeed = (width / FRAME_RATE * 3.5).toInt()
+        stepsGenerator.speed = (width / FRAME_RATE * 3.5).toInt()
         setMeasuredDimension(width, width)
     }
 
@@ -77,32 +79,45 @@ class Grid2048View(
     }
 
     fun restart() {
+        lastSpawn = null
+        lastSteps = listOf()
         tiles.clear()
         repeat(4) { generateRandom() }
         postInvalidate()
     }
 
     fun advancedGridLevel() {
-        tiles.forEach {
+        tiles.map {
             if (it.level == 1) {
                 it.advancedGridLevel()
             } else {
                 it.level--
             }
-            it.prepareBumpAnimation()
-        }
 
-        bumpingTiles.addAll(tiles)
-        pendingGenerateNewTile = false
-        Animator.addAndStart(this)
+            AnimationChain(it).next { _ -> BumpTileAnimation(it) }
+        }.also {
+            Animator.addAndStart(it)
+        }
+        lastSpawn = null
+        lastSteps = listOf()
     }
 
     fun toJson(): JSONObject {
         return JSONObject().apply {
-            val arrTiles = tiles
+            tiles
                 .map { it.toJson() }
                 .jsonArray()
-            put("tiles", arrTiles)
+                .also { put("tiles", it) }
+
+            lastSteps
+                .map { it.toJson() }
+                .jsonArray()
+                .also { put("lastSteps", it) }
+
+            lastSpawn?.also {
+                put("lastSpawnX", it.x)
+                put("lastSpawnY", it.y)
+            }
         }
     }
 
@@ -116,9 +131,19 @@ class Grid2048View(
                 val pos = Position(tileObj.getInt("x"), tileObj.getInt("y"))
                 val value = baseByte.double(tileLevel-1)
 
-                GridTile(context, value, pos, tileLevel, tileSize)
+                GridTile(this, value, pos, tileLevel, tileSize)
             }
             .also { tiles.addAll(it) }
+
+        lastSteps = json.getJSONArray("lastSteps")
+            .mapJsonObject(StepAction::fromJson)
+
+        if (json.has("lastSpawnX") && json.has("lastSpawnY")) {
+            lastSpawn = Position(
+                json.getInt("lastSpawnX"),
+                json.getInt("lastSpawnY"),
+            )
+        }
 
         postInvalidate()
     }
@@ -158,130 +183,112 @@ class Grid2048View(
             val tile = tiles.findByPosition(position)
         } while(tile != null)
 
-        return if (rnd.nextInt(10) < 1)
-            GridTile(context, baseByteValue.double(), position, 2, tileSize).also { tiles.add(it) }
+        val tile = if (rnd.nextInt(10) < 1)
+            GridTile(this, baseByteValue.double(), position, 2, tileSize)
         else
-            GridTile(context, baseByteValue.clone(), position, 1, tileSize).also { tiles.add(it) }
+            GridTile(this, baseByteValue.clone(), position, 1, tileSize)
+
+        tiles.add(tile)
+        return tile
+    }
+
+    fun revertLast(): Boolean {
+        val spawnPos = lastSpawn ?: return false
+
+        if (lastSteps.isNotEmpty()) {
+            lastSteps
+                .sortedWith { a, b ->
+                    if (a is StepMerge)
+                        if (b is StepMerge) 0 else -1
+                    else
+                        if (b is StepMerge) 1 else 0
+                }
+                .mapNotNull { step ->
+                    when(step) {
+                        is StepMove -> {
+                            val tile = tiles.findByPosition(step.positionDest)!!
+                            listOf(stepsGenerator.addMoveAnimation(tile, step.positionTile))
+                        }
+                        is StepMerge -> {
+                            val tile = tiles.findByPosition(step.positionDest)!!
+                            tile.reduceTileLevel()
+
+                            val cloned = tile.clone()
+                            tiles.add(cloned)
+
+                            listOf(
+                                stepsGenerator.addBumpAnimation(tile),
+                                stepsGenerator.addBumpAnimation(cloned)
+                                    .also { stepsGenerator.addMoveAnimation(cloned, step.positionBase, it) }
+                            )
+                        }
+                        else -> null
+                    }
+                }
+                .flatten()
+                .toMutableList()
+
+                .let { list ->
+                    val tile = tiles.findByPosition(spawnPos)!!
+                    AnimationChain(tile)
+                        .next { BumpTileAnimation(tile) }
+                        .end { tiles.remove(tile) }
+                        .also { list.add(it) }
+
+                    AnimationChain.reduce(list)
+                }
+                .also { Animator.addAndStart(it) }
+
+            lastSteps = listOf()
+            lastSpawn = null
+            return true
+        }
+        return false
     }
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (pendingSteps.isNotEmpty() && movingTiles.isNotEmpty() || gameOver) {
+        if (Animator.blockedGrid || gameOver || paused) {
             return super.onTouchEvent(event)
         }
 
+        val steps = mutableListOf<StepAction>()
+        fun startAnimation(chains: List<AnimationChain>) {
+            if (chains.isNotEmpty()) {
+                Animator.addAndStart(chains)
+                Animator.join(chains) { action, value ->
+                    if (Animator.BLOCK_CHANGED == action && !value) {
+                        if (onProduceByteListener != null) {
+                            chains
+                                .mapNotNull<AnimationChain, SByte> { it["mergedValue"] }
+                                .fold(0.sByte) { acc, it -> acc + it }
+                                .also { onProduceByteListener?.accept(it) }
+                        }
+
+                        val newTile = generateRandom()
+                        AnimationChain(newTile)
+                            .next { BumpTileAnimation(newTile) }
+                            .also { Animator.addAndStart(it) }
+
+                        lastSteps = steps
+                        lastSpawn = newTile.pos
+                    }
+                }
+            }
+        }
+
         when(touchControl.onTouchEvent(event)) {
-            MOVE_RIGHT -> {
-                pendingSteps = stepsGenerator.moveRight(tiles)
-                pendingGenerateNewTile = true
-                if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
-            }
-            MOVE_LEFT -> {
-                pendingSteps = stepsGenerator.moveLeft(tiles)
-                pendingGenerateNewTile = true
-                if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
-            }
-            MOVE_DOWN -> {
-                pendingSteps = stepsGenerator.moveDown(tiles)
-                pendingGenerateNewTile = true
-                if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
-            }
-            MOVE_UP -> {
-                pendingSteps = stepsGenerator.moveUp(tiles)
-                pendingGenerateNewTile = true
-                if (pendingSteps.isNotEmpty()) Animator.addAndStart(this)
-            }
+            MOVE_RIGHT -> stepsGenerator.moveRight(tiles, steps).also { startAnimation(it) }
+            MOVE_LEFT -> stepsGenerator.moveLeft(tiles, steps).also { startAnimation(it) }
+            MOVE_DOWN -> stepsGenerator.moveDown(tiles, steps).also { startAnimation(it) }
+            MOVE_UP -> stepsGenerator.moveUp(tiles, steps).also { startAnimation(it) }
             else -> {}
         }
         return true
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        synchronized(tiles) {
-            canvas?.let {
-                tiles.forEach { it.draw(canvas) }
-            }
-        }
-    }
-
-    override fun start() {
-        pendingSteps.forEach {
-            when(it) {
-                is StepMove -> {
-                    tiles.findByPosition(it.positionTile)
-                        ?.apply { movingTiles.add(this) }
-                        ?.prepareStepAnimation(it.positionDest, tileSpeed)
-                }
-                is StepMerge -> {
-                    tiles.findByPosition(it.positionBase)
-                        ?.apply { movingTiles.add(this) }
-                        ?.prepareStepAnimation(it.positionDest, tileSpeed)
-                }
-            }
-        }
-
-        onProduceByteListener?.also { listener ->
-            pendingSteps
-                .filterIsInstance<StepMerge>()
-                .map { tiles.findByPosition(it.positionBase)!! }
-                .fold(0.sByte) { acc, it -> acc + it.value }
-                .also { if (!it.isZero) listener.accept(it.double()) }
-        }
-    }
-
-    override fun updateAnimation(moment: Long): Boolean {
-        synchronized(tiles) {
-            bumpingTiles.removeIf { tile -> !tile.bumpAnimation() }
-
-            movingTiles.removeIf { tile ->
-                val cont = tile.stepAnimation()
-                if (!cont) {
-                    val stepMove = pendingSteps.find {
-                        it is StepMove && it.positionTile == tile.pos
-                    } as StepMove?
-
-                    if (stepMove != null) {
-                        stepsGenerator.applyStep(tiles, stepMove)
-
-                    } else {
-                        val stepMerge = pendingSteps.find {
-                            it is StepMerge && it.positionBase == tile.pos
-                        } as StepMerge?
-
-                        stepMerge?.also {
-                            tiles.findByPosition(stepMerge.positionDest)?.also { dest ->
-                                tiles.remove(tile)
-                                dest.advanceTileLevel()
-                                bumpingTiles.add(dest)
-                                dest.prepareBumpAnimation()
-                            }
-                        }
-                    }
-                }
-                !cont
-            }
-
-            if (pendingGenerateNewTile && movingTiles.isEmpty()) {
-                pendingGenerateNewTile = false
-                generateRandom().also {
-                    it.prepareBumpAnimation()
-                    bumpingTiles.add(it)
-                }
-            }
-
-            postInvalidate()
-        }
-
-        return movingTiles.isNotEmpty() || bumpingTiles.isNotEmpty()
-    }
-
-    override fun end(moment: Long) {
-        pendingSteps = listOf()
-        pendingGenerateNewTile = false
-
-        if (gameOver) {
-            onGameOverListener?.run()
-        }
+        tiles.toList().forEach { it.draw(canvas) }
     }
 }

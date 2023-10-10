@@ -1,4 +1,4 @@
-package org.oar.bytes.ui.common.components
+package org.oar.bytes.ui.common.components.levelpanel
 
 import android.content.Context
 import android.util.AttributeSet
@@ -14,7 +14,7 @@ import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import java.util.function.Consumer
 
-class LevelPanelGrid(
+class LevelPanelView(
     context: Context,
     attr: AttributeSet? = null
 ) : FrameLayout(context, attr) {
@@ -44,39 +44,70 @@ class LevelPanelGrid(
     var storedValue = 0.sByte
         set(value) {
             field = value
+
             progressBar.setCapacityProgress(storedValue, capacity)
             progressBar.setLevelProgress(storedValue, toLevel)
 
-            capacityUpButton.setBackgroundColor(
-                if (field >= capacity) R.color.capacityColor.color(context)
-                else Constants.SHADE_COLORS[0]
-            )
+            if (value >= toLevel) {
+                if (!newLevelReached) {
+                    levelUpButton.setBackgroundColor(R.color.levelColor.color(context))
+                    newLevelReached = true
+                    onNewLevelReachedListener?.accept(true)
+                }
+            } else if (newLevelReached) {
+                levelUpButton.setBackgroundColor(Constants.SHADE_COLORS[0])
+                newLevelReached = false
+                onNewLevelReachedListener?.accept(false)
+            }
 
-            levelUpButton.setBackgroundColor(
-                if (field >= toLevel) R.color.levelColor.color(context)
-                else Constants.SHADE_COLORS[0]
-            )
+            if (value >= capacity) {
+                if (!capacityReached) {
+                    capacityUpButton.setBackgroundColor(R.color.capacityColor.color(context))
+                    capacityReached = true
+                    onCapacityReachedListener?.accept(true)
+                }
+            } else if (capacityReached) {
+                capacityUpButton.setBackgroundColor(Constants.SHADE_COLORS[0])
+                capacityReached = false
+                onCapacityReachedListener?.accept(false)
+            }
         }
 
     // listeners
     private var onLevelUpListener: Consumer<Int>? = null
     fun setLevelUpListener(listener: Consumer<Int>) { onLevelUpListener = listener }
 
+    private var newLevelReached = false
+    private var onNewLevelReachedListener: Consumer<Boolean>? = null
+    fun setOnNewLevelReachedListener(listener: Consumer<Boolean>) { onNewLevelReachedListener = listener }
+
+    private var capacityReached = false
+    private var onCapacityReachedListener: Consumer<Boolean>? = null
+    fun setOnCapacityReachedListener(listener: Consumer<Boolean>) { onCapacityReachedListener = listener }
+
     init {
         LayoutInflater.from(context).inflate(R.layout.component_level_panel, this, true)
 
         findViewById<TextView>(R.id.levelUpButton).setOnClickListener {
             if (storedValue >= toLevel) {
-                storedValue -= toLevel
+                val expRequired = toLevel
                 Data.gridLevel++
+                storedValue -= expRequired
                 levelUpButton.text = Data.gridLevel.toString()
                 onLevelUpListener?.accept(Data.gridLevel)
+
+                if (storedValue < toLevel) {
+                    newLevelReached = false
+                    onNewLevelReachedListener?.accept(false)
+                }
             }
         }
 
         findViewById<TextView>(R.id.capacityUpButton).setOnClickListener {
             capacity += storedValue
             storedValue = 0.sByte
+            capacityReached = false
+            onCapacityReachedListener?.accept(false)
         }
 
         storedValue = 0.sByte

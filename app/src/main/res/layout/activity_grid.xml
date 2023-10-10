@@ -10,11 +10,17 @@
     tools:context=".ui.GridActivity"
     android:orientation="vertical" >
 
-    <org.oar.bytes.ui.common.components.LevelPanelGrid
+    <org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
         android:id="@+id/levelPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingVertical="32dp" />
+        android:paddingBottom="16dp" />
+
+    <org.oar.bytes.ui.common.components.HintsView
+        android:id="@+id/hintsPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp" />
 
     <org.oar.bytes.ui.common.components.grid.Grid2048View
         android:id="@+id/grid"

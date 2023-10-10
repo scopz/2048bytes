@@ -1,4 +1,4 @@
-package org.oar.bytes.ui.common.components
+package org.oar.bytes.ui.common.components.levelpanel
 
 import android.annotation.SuppressLint
 import android.content.Context

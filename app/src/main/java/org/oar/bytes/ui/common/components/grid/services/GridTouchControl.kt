@@ -1,10 +1,10 @@
 package org.oar.bytes.ui.common.components.grid.services
 
-import android.content.Context
 import android.view.MotionEvent
+import android.view.View
 
 class GridTouchControl(
-    val context: Context
+    val parent: View
 ) {
     enum class Action {
         MOVE_LEFT, MOVE_RIGHT, MOVE_UP, MOVE_DOWN
@@ -27,10 +27,10 @@ class GridTouchControl(
                     val dy = event.y - dragPosY
 
                     return when {
-                        dx > 35 -> Action.MOVE_RIGHT
-                        dx < -35 -> Action.MOVE_LEFT
-                        dy > 35 -> Action.MOVE_DOWN
-                        dy < -35 -> Action.MOVE_UP
+                        dx > 55 && dx > dy -> Action.MOVE_RIGHT
+                        dx < -55 && dx < dy -> Action.MOVE_LEFT
+                        dy > 55 -> Action.MOVE_DOWN
+                        dy < -55 -> Action.MOVE_UP
                         else -> null
                     }
                         ?.apply { actionDone = true }

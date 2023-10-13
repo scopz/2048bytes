@@ -12,6 +12,9 @@ object JsonExt {
     fun <T> JSONArray.mapJsonArray(function: (JSONArray) -> T) =
         map(function) { getJSONArray(it) }
 
+    fun <T> JSONArray.mapInt(function: (Int) -> T) =
+        map(function) { getInt(it) }
+
     private fun <O,T> JSONArray.map(function: (O) -> T, getFunction: (Int) -> O): List<T> {
         return mutableListOf<T>().also { list ->
             val length = this.length()

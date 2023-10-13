@@ -21,6 +21,8 @@ import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.
 import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
+import org.oar.bytes.utils.JsonExt.mapInt
+import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.ListExt.findByPosition
 import org.oar.bytes.utils.NumbersExt.sByte
@@ -39,8 +41,10 @@ class Grid2048View(
 
     private var tileSize: Int = 0
     private val tiles = mutableListOf<GridTile>()
-    private var lastSteps = listOf<StepAction>()
-    private var lastSpawn: Position? = null
+
+    private val MAX_REVERTS = 10
+    private val lastSteps = mutableListOf<List<StepAction>>()
+    private val lastSpawn = mutableListOf<Position>()
 
     var paused = false
         set(value) {
@@ -81,8 +85,8 @@ class Grid2048View(
     }
 
     fun restart() {
-        lastSpawn = null
-        lastSteps = listOf()
+        lastSpawn.clear()
+        lastSteps.clear()
         tiles.clear()
         repeat(4) { generateRandom() }
         postInvalidate()
@@ -100,8 +104,8 @@ class Grid2048View(
         }.also {
             Animator.addAndStart(it)
         }
-        lastSpawn = null
-        lastSteps = listOf()
+        lastSpawn.clear()
+        lastSteps.clear()
     }
 
     fun toJson(): JSONObject {
@@ -112,14 +116,17 @@ class Grid2048View(
                 .also { put("tiles", it) }
 
             lastSteps
-                .map { it.toJson() }
+                .map { steps -> steps
+                    .map { it.toJson() }
+                    .jsonArray()
+                }
                 .jsonArray()
                 .also { put("lastSteps", it) }
 
-            lastSpawn?.also {
-                put("lastSpawnX", it.x)
-                put("lastSpawnY", it.y)
-            }
+            lastSpawn
+                .map { listOf(it.x, it.y).jsonArray() }
+                .jsonArray()
+                .also { put("lastSpawns", it) }
         }
     }
 
@@ -131,20 +138,26 @@ class Grid2048View(
             .mapJsonObject { tileObj ->
                 val tileLevel = tileObj.getInt("level")
                 val pos = Position(tileObj.getInt("x"), tileObj.getInt("y"))
-                val value = baseByte.double(tileLevel-1)
+                val value = baseByte.double(tileLevel - 1)
 
                 GridTile(this, value, pos, tileLevel, tileSize)
             }
             .also { tiles.addAll(it) }
 
-        lastSteps = json.getJSONArray("lastSteps")
-            .mapJsonObject(StepAction::fromJson)
+        this.lastSteps.clear()
+        if (json.has("lastSteps")) {
+            val lastSteps = json.getJSONArray("lastSteps")
+                .mapJsonArray {
+                    it.mapJsonObject(StepAction::fromJson)
+                }
+            this.lastSteps.addAll(lastSteps)
+        }
 
-        if (json.has("lastSpawnX") && json.has("lastSpawnY")) {
-            lastSpawn = Position(
-                json.getInt("lastSpawnX"),
-                json.getInt("lastSpawnY"),
-            )
+        this.lastSpawn.clear()
+        if (json.has("lastSpawns")) {
+            val lastSpawn = json.getJSONArray("lastSpawns")
+                .mapJsonArray { Position(it.getInt(0), it.getInt(1)) }
+            this.lastSpawn.addAll(lastSpawn)
         }
 
         postInvalidate()
@@ -195,10 +208,14 @@ class Grid2048View(
     }
 
     fun revertLast(): Boolean {
-        val spawnPos = lastSpawn ?: return false
+        if (Animator.blockedGrid || lastSpawn.isEmpty() || lastSteps.isEmpty())
+            return false
 
-        if (lastSteps.isNotEmpty()) {
-            lastSteps
+        val spawnPos = lastSpawn.removeLast()
+        val steps = lastSteps.removeLast()
+
+        if (steps.isNotEmpty()) {
+            steps
                 .sortedWith { a, b ->
                     if (a is StepMerge)
                         if (b is StepMerge) 0 else -1
@@ -241,8 +258,6 @@ class Grid2048View(
                 }
                 .also { Animator.addAndStart(it) }
 
-            lastSteps = listOf()
-            lastSpawn = null
             return true
         }
         return false
@@ -277,8 +292,15 @@ class Grid2048View(
                             .next { BumpTileAnimation(newTile) }
                             .also { Animator.addAndStart(it) }
 
-                        lastSteps = steps
-                        lastSpawn = newTile.pos
+                        lastSteps.add(steps)
+                        lastSpawn.add(newTile.pos)
+
+                        while (lastSteps.size > MAX_REVERTS) {
+                            lastSteps.removeFirst()
+                        }
+                        while (lastSpawn.size > MAX_REVERTS) {
+                            lastSpawn.removeFirst()
+                        }
                     }
                 }
             }

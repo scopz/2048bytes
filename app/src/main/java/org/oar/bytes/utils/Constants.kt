@@ -1,6 +1,9 @@
 package org.oar.bytes.utils
 
 import android.graphics.Color
+import org.oar.bytes.utils.NumbersExt.BIG_DECIMAL_TWO
+import org.oar.bytes.utils.NumbersExt.sByte
+import java.math.BigDecimal
 
 object Constants {
 
@@ -15,29 +18,36 @@ object Constants {
     val SHADE_COLORS = mutableListOf<Int>()
     val BUMP_COLORS = mutableListOf(Color.BLACK)
 
-    /*
-    val LEVEL_EXP = listOf(
-        300,
-        3000,
-        15000,
-        40000,
-        100000,
-        233900,
-        500000,
-        1000000,
-        2150000,
-    )
-    */
-    val LEVEL_EXP = listOf(
-        100,
-        300,
-        1000,
-        4000,
-        10000,
-        23390,
-        50000,
-        100000,
-        215000,
-        500000,
-    )
+    val LEVEL_EXP = GeneratorMap(
+        0 to 100.sByte,
+        1 to 300.sByte,
+        2 to 3000.sByte,
+        3 to 15000.sByte,
+        4 to 40000.sByte,
+        5 to 100000.sByte,
+        6 to 230000.sByte,
+        7 to 500000.sByte,
+    ) {
+        BigDecimal("3906.25")
+            .multiply(BIG_DECIMAL_TWO.pow(it))
+            .toBigInteger()
+            .sByte
+            .also { a -> println(a.value) }
+    }
+
+    class GeneratorMap<T>(
+        vararg pairs: Pair<Int, T>,
+        private val generator: (Int) -> T
+    ) : HashMap<Int, T>() {
+
+        init {
+            putAll(pairs)
+        }
+
+        override operator fun get(key: Int): T {
+            return super.get(key) ?: run {
+                generator(key).also { this[key] = it }
+            }
+        }
+    }
 }

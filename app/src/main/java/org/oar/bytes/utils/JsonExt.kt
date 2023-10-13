@@ -6,20 +6,17 @@ import org.json.JSONObject
 object JsonExt {
     fun <T> List<T>.jsonArray() = JSONArray().also { this.forEach { obj -> it.put(obj) } }
 
-    fun <T> JSONArray.map(function: (JSONArray, Int) -> T): List<T> {
-        return mutableListOf<T>().also { list ->
-            val length = this.length()
-            for (i in 0 until length) {
-                list.add(function(this, i))
-            }
-        }
-    }
+    fun <T> JSONArray.mapJsonObject(function: (JSONObject) -> T) =
+        map(function) { getJSONObject(it) }
 
-    fun <T> JSONArray.mapJsonObject(function: (JSONObject) -> T): List<T> {
+    fun <T> JSONArray.mapJsonArray(function: (JSONArray) -> T) =
+        map(function) { getJSONArray(it) }
+
+    private fun <O,T> JSONArray.map(function: (O) -> T, getFunction: (Int) -> O): List<T> {
         return mutableListOf<T>().also { list ->
             val length = this.length()
             for (i in 0 until length) {
-                list.add(function(this.getJSONObject(i)))
+                list.add(function(getFunction(i)))
             }
         }
     }

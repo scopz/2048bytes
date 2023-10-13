@@ -31,12 +31,7 @@ class LevelPanelView(
         }
 
     private var toLevel: SByte
-        get() {
-            val index = Data.gridLevel - 1
-            val exp = if (index < Constants.LEVEL_EXP.size) Constants.LEVEL_EXP[index]
-                else Constants.LEVEL_EXP.last()
-            return exp.sByte
-        }
+        get() = Constants.LEVEL_EXP[Data.gridLevel - 1]
         set(value) {
             progressBar.setLevelProgress(storedValue, value)
         }

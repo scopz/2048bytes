@@ -22,9 +22,11 @@ import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
+import org.oar.bytes.utils.ListExt.findByPosition
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import java.util.*
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 
 class Grid2048View(
@@ -36,7 +38,7 @@ class Grid2048View(
         get() = 1.sByte.double(Data.gridLevel-1)
 
     private var tileSize: Int = 0
-    private val tiles = TileList<GridTile>()
+    private val tiles = mutableListOf<GridTile>()
     private var lastSteps = listOf<StepAction>()
     private var lastSpawn: Position? = null
 
@@ -51,8 +53,8 @@ class Grid2048View(
     private val stepsGenerator = GridStepsGenerator(this)
 
     // listeners
-    private var onProduceByteListener: Consumer<SByte>? = null
-    fun setOnProduceByteListener(listener: Consumer<SByte>) { onProduceByteListener = listener }
+    private var onProduceByteListener: BiConsumer<Int, SByte>? = null
+    fun setOnProduceByteListener(listener: BiConsumer<Int, SByte>) { onProduceByteListener = listener }
 
     private var onGameOverListener: Runnable? = null
     fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
@@ -248,7 +250,7 @@ class Grid2048View(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (Animator.blockedGrid || gameOver || paused) {
+        if (gameOver || paused || MotionEvent.ACTION_MOVE == event.action && Animator.blockedGrid) {
             return super.onTouchEvent(event)
         }
 
@@ -259,10 +261,15 @@ class Grid2048View(
                 Animator.join(chains) { action, value ->
                     if (Animator.BLOCK_CHANGED == action && !value) {
                         if (onProduceByteListener != null) {
-                            chains
+                            val mergedValue = chains
                                 .mapNotNull<AnimationChain, SByte> { it["mergedValue"] }
                                 .fold(0.sByte) { acc, it -> acc + it }
-                                .also { onProduceByteListener?.accept(it) }
+
+                            val mergedLevel = chains
+                                .mapNotNull<AnimationChain, Int> { it["mergedLevel"] }
+                                .sum()
+
+                            onProduceByteListener?.accept(mergedLevel, mergedValue)
                         }
 
                         val newTile = generateRandom()

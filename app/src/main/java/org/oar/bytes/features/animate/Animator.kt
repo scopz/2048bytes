@@ -48,7 +48,7 @@ object Animator {
             .onEach {
                 val found = animations.indexOfFirst { wrap -> wrap.animation.ref == it.ref }
                 if (found >= 0) {
-                    animations.removeAt(found)
+                    animations.removeAt(found).animation.endAnimation()
                 }
             }
             .map { chain ->

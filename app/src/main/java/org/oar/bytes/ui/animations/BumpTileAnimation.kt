@@ -22,11 +22,14 @@ class BumpTileAnimation(
             activeColor = BUMP_COLORS[BUMP_COLORS.indexOf(activeColor)+1]
         }
         if (activeColor == BUMP_COLORS.last()) {
-            tile.background = Color.BLACK
             return false
         }
         tile.background = activeColor
         return true
+    }
+
+    override fun endAnimation() {
+        tile.background = Color.BLACK
     }
 
     override fun applyAnimation() {

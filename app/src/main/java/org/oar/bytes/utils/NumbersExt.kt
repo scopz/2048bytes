@@ -6,6 +6,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 object NumbersExt {
+    val BIG_DECIMAL_TWO = 2.toBigDecimal()
     val TWO = 2.toBigInteger()
     val THOUSAND_BYTES = 1024.toBigInteger()
     private val THOUSAND_BYTES_BD = THOUSAND_BYTES.toBigDecimal()

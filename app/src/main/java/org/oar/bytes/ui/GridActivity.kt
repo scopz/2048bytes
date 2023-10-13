@@ -34,8 +34,8 @@ class GridActivity : AppCompatActivity() {
             Data.gridLevel = 1
         }
 
-        grid.setOnProduceByteListener {
-            levelPanel.addBytes(it)
+        grid.setOnProduceByteListener { _, value ->
+            levelPanel.addBytes(value)
         }
 
         grid.setOnGameOverListener {

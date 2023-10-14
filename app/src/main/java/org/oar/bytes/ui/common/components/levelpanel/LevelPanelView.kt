@@ -50,7 +50,7 @@ class LevelPanelView(
                     onNewLevelReachedListener?.accept(true)
                 }
             } else if (newLevelReached) {
-                levelUpButton.setBackgroundColor(Constants.SHADE_COLORS[0])
+                levelUpButton.setBackgroundColor(R.color.itemDefaultBackground.color(context))
                 newLevelReached = false
                 onNewLevelReachedListener?.accept(false)
             }
@@ -62,7 +62,7 @@ class LevelPanelView(
                     onCapacityReachedListener?.accept(true)
                 }
             } else if (capacityReached) {
-                capacityUpButton.setBackgroundColor(Constants.SHADE_COLORS[0])
+                capacityUpButton.setBackgroundColor(R.color.itemDefaultBackground.color(context))
                 capacityReached = false
                 onCapacityReachedListener?.accept(false)
             }
@@ -98,7 +98,7 @@ class LevelPanelView(
             }
         }
 
-        findViewById<TextView>(R.id.capacityUpButton).setOnClickListener {
+        capacityUpButton.setOnClickListener {
             capacity += storedValue
             storedValue = 0.sByte
             capacityReached = false

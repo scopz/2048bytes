@@ -11,7 +11,6 @@ import android.widget.FrameLayout
 import android.widget.TextView
 import org.oar.bytes.R
 import org.oar.bytes.model.SByte
-import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.NumbersExt.color
 
 class ProgressBarView(
@@ -43,7 +42,7 @@ class ProgressBarView(
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_progress_bar, this, true)
-        setBackgroundColor(Constants.SHADE_COLORS[0])
+        setBackgroundColor(R.color.itemDefaultBackground.color(context))
     }
 
     fun setLevelProgress(current: SByte, max: SByte) {
@@ -67,8 +66,6 @@ class ProgressBarView(
         capacityBar.color = R.color.capacityColor.color(context)
         levelBar.color = R.color.levelColor.color(context)
     }
-
-
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {

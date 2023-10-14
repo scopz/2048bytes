@@ -7,6 +7,7 @@ import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
 import org.json.JSONObject
+import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.model.Position
@@ -18,13 +19,13 @@ import org.oar.bytes.ui.common.components.grid.model.StepMove
 import org.oar.bytes.ui.common.components.grid.services.GridStepsGenerator
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControl
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.*
-import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapInt
 import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.ListExt.findByPosition
+import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import java.util.*
@@ -67,7 +68,7 @@ class Grid2048View(
     fun setOnReadyListener(listener: Runnable) { onReadyListener = listener }
 
     init {
-        setBackgroundColor(Constants.SHADE_COLORS[0])
+        setBackgroundColor(R.color.itemDefaultBackground.color(context))
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {

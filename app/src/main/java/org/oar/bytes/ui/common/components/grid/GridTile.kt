@@ -21,7 +21,7 @@ open class GridTile(
 
     private val levelColor
         get() = when {
-            level < SHADE_COLORS.size -> SHADE_COLORS[level]
+            (level-1) < SHADE_COLORS.size -> SHADE_COLORS[level-1]
             else -> SHADE_COLORS.last()
         }
 
@@ -41,7 +41,7 @@ open class GridTile(
         set(value) {
             field = value
             val color = if (value == Color.BLACK) levelColor else value
-            view.setBackgroundColor(color)
+            valueView.setBackgroundColor(color)
         }
 
     init {
@@ -49,7 +49,7 @@ open class GridTile(
         val measuredHeight = View.MeasureSpec.makeMeasureSpec(size, View.MeasureSpec.EXACTLY)
         view.measure(measureWidth, measuredHeight)
         view.layout(0, 0, size, size)
-        view.setBackgroundColor(levelColor)
+        valueView.setBackgroundColor(levelColor)
         valueView.text = value.toString()
     }
 

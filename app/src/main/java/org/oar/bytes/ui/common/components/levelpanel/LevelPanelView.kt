@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.TextView
 import org.json.JSONObject
 import org.oar.bytes.R
@@ -20,7 +21,7 @@ class LevelPanelView(
 ) : FrameLayout(context, attr) {
 
     private val levelUpButton by lazy { findViewById<TextView>(R.id.levelUpButton) }
-    private val capacityUpButton by lazy { findViewById<TextView>(R.id.capacityUpButton) }
+    private val capacityUpButton by lazy { findViewById<ImageView>(R.id.capacityUpButton) }
 
     private val progressBar by lazy { findViewById<ProgressBarView>(R.id.progressBar) }
 

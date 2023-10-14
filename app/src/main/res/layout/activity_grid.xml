@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:paddingBottom="16dp" />
 
-    <org.oar.bytes.ui.common.components.HintsView
+    <org.oar.bytes.ui.common.components.hints.HintsView
         android:id="@+id/hintsPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

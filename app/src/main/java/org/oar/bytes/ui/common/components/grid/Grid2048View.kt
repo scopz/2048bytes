@@ -21,16 +21,14 @@ import org.oar.bytes.ui.common.components.grid.services.GridTouchControl
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.*
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
-import org.oar.bytes.utils.JsonExt.mapInt
 import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.ListExt.findByPosition
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
+import org.oar.bytes.utils.TriConsumer
 import java.util.*
-import java.util.function.BiConsumer
-import java.util.function.Consumer
 
 class Grid2048View(
     context: Context,
@@ -58,8 +56,8 @@ class Grid2048View(
     private val stepsGenerator = GridStepsGenerator(this)
 
     // listeners
-    private var onProduceByteListener: BiConsumer<Int, SByte>? = null
-    fun setOnProduceByteListener(listener: BiConsumer<Int, SByte>) { onProduceByteListener = listener }
+    private var onProduceByteListener: TriConsumer<Int, Int, SByte>? = null
+    fun setOnProduceByteListener(listener: TriConsumer<Int, Int, SByte>) { onProduceByteListener = listener }
 
     private var onGameOverListener: Runnable? = null
     fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
@@ -281,11 +279,10 @@ class Grid2048View(
                                 .mapNotNull<AnimationChain, SByte> { it["mergedValue"] }
                                 .fold(0.sByte) { acc, it -> acc + it }
 
-                            val mergedLevel = chains
+                            val mergedLevels = chains
                                 .mapNotNull<AnimationChain, Int> { it["mergedLevel"] }
-                                .sum()
 
-                            onProduceByteListener?.accept(mergedLevel, mergedValue)
+                            onProduceByteListener?.accept(mergedLevels.size, mergedLevels.sum(), mergedValue)
                         }
 
                         val newTile = generateRandom()

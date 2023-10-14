@@ -5,13 +5,13 @@
     android:layout_height="match_parent"
     android:orientation="horizontal" >
 
-    <TextView
+    <org.oar.bytes.ui.common.components.hints.HintButtonView
         android:id="@+id/revertLastBtn"
         android:layout_width="46dp"
         android:layout_height="46dp"
+        android:padding="10dp"
         android:gravity="center"
         android:background="@color/itemDefaultBackground"
-        android:text="R"
-        android:textSize="16sp" />
+        android:src="@drawable/undo_24px" />
 
 </LinearLayout>

@@ -23,4 +23,7 @@ object JsonExt {
             }
         }
     }
+
+    fun JSONObject.getJSONArrayOrNull(name: String) =
+        if (has(name)) getJSONArray(name) else null
 }

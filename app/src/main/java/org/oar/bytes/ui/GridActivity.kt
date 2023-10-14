@@ -7,8 +7,8 @@ import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.InitialLoad
-import org.oar.bytes.ui.common.components.HintsView
 import org.oar.bytes.ui.common.components.grid.Grid2048View
+import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
@@ -34,8 +34,9 @@ class GridActivity : AppCompatActivity() {
             Data.gridLevel = 1
         }
 
-        grid.setOnProduceByteListener { _, value ->
+        grid.setOnProduceByteListener { count, _, value ->
             levelPanel.addBytes(value)
+            hintsPanel.addProgress(count)
         }
 
         grid.setOnGameOverListener {
@@ -77,6 +78,7 @@ class GridActivity : AppCompatActivity() {
     override fun onPause() {
         val json = grid.toJson()
         levelPanel.appendToJson(json)
+        hintsPanel.appendToJson(json)
         json.put("gridLevel", Data.gridLevel)
 
         saveState(json)
@@ -86,6 +88,7 @@ class GridActivity : AppCompatActivity() {
     private fun reloadState(json: JSONObject) {
         Data.gridLevel = json.getInt("gridLevel")
         levelPanel.fromJson(json)
+        hintsPanel.fromJson(json)
         grid.fromJson(json)
     }
 }

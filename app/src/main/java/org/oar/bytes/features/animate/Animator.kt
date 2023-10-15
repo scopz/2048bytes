@@ -27,6 +27,7 @@ object Animator {
         val exists = animations.firstOrNull { it.animation.ref == chain.ref }
         if (exists != null) return
 
+        chain.start()
         val animation = chain.next()!!
         AnimationWrapper(
             chain,
@@ -52,6 +53,7 @@ object Animator {
                 }
             }
             .map { chain ->
+                chain.start()
                 val anim = chain.next()!!
                 anim.startAnimation()
                 AnimationWrapper(chain, System.currentTimeMillis(), anim)

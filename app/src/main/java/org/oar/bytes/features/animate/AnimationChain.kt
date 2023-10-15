@@ -5,6 +5,7 @@ import java.util.function.Function
 class AnimationChain(
     val ref: Any
 ) {
+    private var startAction = mutableListOf<Runnable>()
     private var nextAction = mutableListOf<Function<AnimationChain, Animation>>()
     private var endAction = mutableListOf<Runnable>()
     private val extras = mutableMapOf<String, Any>()
@@ -15,6 +16,7 @@ class AnimationChain(
             val rest = list.filter { !uniqueList.contains(it) }
             rest.forEach {
                 val chain = uniqueList.first { d -> d.ref == it.ref }
+                chain.startAction.addAll(it.startAction)
                 chain.nextAction.addAll(it.nextAction)
                 chain.endAction.addAll(it.endAction)
             }
@@ -34,6 +36,15 @@ class AnimationChain(
             return nextAction.removeAt(0).apply(this)
         }
         return null
+    }
+
+    fun start(start: Runnable): AnimationChain {
+        this.startAction.add(start)
+        return this
+    }
+
+    internal fun start() {
+        startAction.forEach(Runnable::run)
     }
 
     fun end(end: Runnable): AnimationChain {

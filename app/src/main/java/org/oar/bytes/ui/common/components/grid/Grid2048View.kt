@@ -14,15 +14,15 @@ import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.BumpTileAnimation
 import org.oar.bytes.ui.common.components.grid.model.StepAction
-import org.oar.bytes.ui.common.components.grid.model.StepMerge
-import org.oar.bytes.ui.common.components.grid.model.StepMove
-import org.oar.bytes.ui.common.components.grid.services.GridStepsGenerator
-import org.oar.bytes.ui.common.components.grid.services.GridTouchControl
-import org.oar.bytes.ui.common.components.grid.services.GridTouchControl.Action.*
+import org.oar.bytes.ui.common.components.grid.services.GridAnimatorService
+import org.oar.bytes.ui.common.components.grid.services.GridStepsGeneratorService
+import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService
+import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService.Action.*
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
+import org.oar.bytes.utils.ListExt.active
 import org.oar.bytes.utils.ListExt.findByPosition
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
@@ -52,8 +52,9 @@ class Grid2048View(
         }
 
     // services
-    private val touchControl = GridTouchControl(this)
-    private val stepsGenerator = GridStepsGenerator(this)
+    private val touchControl = GridTouchControlService(this)
+    private val stepsGenerator = GridStepsGeneratorService(this)
+    private val animator = GridAnimatorService(this)
 
     // listeners
     private var onProduceByteListener: TriConsumer<Int, Int, SByte>? = null
@@ -74,7 +75,8 @@ class Grid2048View(
 
         val width = measuredWidth
         tileSize = width / 4
-        stepsGenerator.speed = (width / FRAME_RATE * 3.5).toInt()
+        animator.speed = (width / FRAME_RATE * 4.5).toInt()
+        stepsGenerator.speed = animator.speed
         setMeasuredDimension(width, width)
     }
 
@@ -92,24 +94,20 @@ class Grid2048View(
     }
 
     fun advancedGridLevel() {
-        tiles.map {
-            if (it.level == 1) {
-                it.advancedGridLevel()
-            } else {
-                it.level--
+        tiles.active
+            .map {
+                if (it.level == 1) it.advancedGridLevel()
+                else               it.level--
+                AnimationChain(it).next { _ -> BumpTileAnimation(it) }
             }
-
-            AnimationChain(it).next { _ -> BumpTileAnimation(it) }
-        }.also {
-            Animator.addAndStart(it)
-        }
+            .also { Animator.addAndStart(it) }
         lastSpawn.clear()
         lastSteps.clear()
     }
 
     fun toJson(): JSONObject {
         return JSONObject().apply {
-            tiles
+            tiles.active
                 .map { it.toJson() }
                 .jsonArray()
                 .also { put("tiles", it) }
@@ -214,48 +212,8 @@ class Grid2048View(
         val steps = lastSteps.removeLast()
 
         if (steps.isNotEmpty()) {
-            steps
-                .sortedWith { a, b ->
-                    if (a is StepMerge)
-                        if (b is StepMerge) 0 else -1
-                    else
-                        if (b is StepMerge) 1 else 0
-                }
-                .mapNotNull { step ->
-                    when(step) {
-                        is StepMove -> {
-                            val tile = tiles.findByPosition(step.positionDest)!!
-                            listOf(stepsGenerator.addMoveAnimation(tile, step.positionTile))
-                        }
-                        is StepMerge -> {
-                            val tile = tiles.findByPosition(step.positionDest)!!
-                            tile.reduceTileLevel()
-
-                            val cloned = tile.clone()
-                            tiles.add(cloned)
-
-                            listOf(
-                                stepsGenerator.addBumpAnimation(tile),
-                                stepsGenerator.addBumpAnimation(cloned)
-                                    .also { stepsGenerator.addMoveAnimation(cloned, step.positionBase, it) }
-                            )
-                        }
-                        else -> null
-                    }
-                }
-                .flatten()
-                .toMutableList()
-
-                .let { list ->
-                    val tile = tiles.findByPosition(spawnPos)!!
-                    AnimationChain(tile)
-                        .next { BumpTileAnimation(tile) }
-                        .end { tiles.remove(tile) }
-                        .also { list.add(it) }
-
-                    AnimationChain.reduce(list)
-                }
-                .also { Animator.addAndStart(it) }
+            val chains = animator.animateRevertSteps(tiles, steps, spawnPos)
+            Animator.addAndStart(chains)
 
             return true
         }
@@ -268,8 +226,10 @@ class Grid2048View(
             return super.onTouchEvent(event)
         }
 
-        val steps = mutableListOf<StepAction>()
-        fun startAnimation(chains: List<AnimationChain>) {
+        fun startAnimation(wrapper: GridStepsGeneratorService.MoveStepsWrapper) {
+            val chains = wrapper.animationChain
+            val steps = wrapper.steps
+
             if (chains.isNotEmpty()) {
                 Animator.addAndStart(chains)
                 Animator.join(chains) { action, value ->
@@ -305,11 +265,11 @@ class Grid2048View(
         }
 
         when(touchControl.onTouchEvent(event)) {
-            MOVE_RIGHT -> stepsGenerator.moveRight(tiles, steps).also { startAnimation(it) }
-            MOVE_LEFT -> stepsGenerator.moveLeft(tiles, steps).also { startAnimation(it) }
-            MOVE_DOWN -> stepsGenerator.moveDown(tiles, steps).also { startAnimation(it) }
-            MOVE_UP -> stepsGenerator.moveUp(tiles, steps).also { startAnimation(it) }
-            else -> {}
+            MOVE_RIGHT -> stepsGenerator.moveRight(tiles).also { startAnimation(it) }
+            MOVE_LEFT -> stepsGenerator.moveLeft(tiles).also { startAnimation(it) }
+            MOVE_DOWN -> stepsGenerator.moveDown(tiles).also { startAnimation(it) }
+            MOVE_UP -> stepsGenerator.moveUp(tiles).also { startAnimation(it) }
+            null -> {}
         }
         return true
     }

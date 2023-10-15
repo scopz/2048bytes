@@ -3,7 +3,7 @@ package org.oar.bytes.ui.common.components.grid.services
 import android.view.MotionEvent
 import android.view.View
 
-class GridTouchControl(
+class GridTouchControlService(
     val parent: View
 ) {
     enum class Action {

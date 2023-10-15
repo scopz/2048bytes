@@ -13,7 +13,7 @@ import org.oar.bytes.utils.Constants.SHADE_COLORS
 open class GridTile(
     private val parent: View,
     val value: SByte,
-    pos_: Position,
+    pos: Position,
     var level: Int,
     val size: Int
 ): Cloneable {
@@ -25,9 +25,11 @@ open class GridTile(
             else -> SHADE_COLORS.last()
         }
 
-    var pointX = pos_.x * size
-    var pointY = pos_.y * size
-    var pos = pos_
+    var zombie = false
+
+    var pointX = pos.x * size
+    var pointY = pos.y * size
+    var pos = pos
         set(value) {
             field = value
             pointX = value.x * size
@@ -88,7 +90,7 @@ open class GridTile(
     }
 
     override fun toString(): String {
-        return "GridTile(value=$value, pos=[${pos.x}, ${pos.y}, level=$level, size=$size])"
+        return "GridTile(value=$value, pos=[${pos.x}, ${pos.y}], level=$level, size=$size)"
     }
 
     public override fun clone() = GridTile(parent, value.clone(), pos, level, size)

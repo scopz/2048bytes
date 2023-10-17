@@ -45,6 +45,7 @@ class Grid2048View(
     private val lastSteps = mutableListOf<List<StepAction>>()
     private val lastSpawn = mutableListOf<Position>()
 
+    var enableMove = true
     var paused = false
         set(value) {
             field = value
@@ -63,9 +64,6 @@ class Grid2048View(
     private var onGameOverListener: Runnable? = null
     fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
 
-    private var onReadyListener: Runnable? = null
-    fun setOnReadyListener(listener: Runnable) { onReadyListener = listener }
-
     init {
         setBackgroundColor(R.color.itemDefaultBackground.color(context))
     }
@@ -80,9 +78,12 @@ class Grid2048View(
         setMeasuredDimension(width, width)
     }
 
+    @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        onReadyListener?.run()
+        tiles.replaceAll {
+            GridTile(this, it.value, it.pos, it.level, tileSize)
+        }
     }
 
     fun restart() {
@@ -105,8 +106,8 @@ class Grid2048View(
         lastSteps.clear()
     }
 
-    fun toJson(): JSONObject {
-        return JSONObject().apply {
+    fun appendToJson(json: JSONObject) {
+        json.apply {
             tiles.active
                 .map { it.toJson() }
                 .jsonArray()
@@ -156,8 +157,6 @@ class Grid2048View(
                 .mapJsonArray { Position(it.getInt(0), it.getInt(1)) }
             this.lastSpawn.addAll(lastSpawn)
         }
-
-        postInvalidate()
     }
 
     private val gameOver: Boolean
@@ -222,7 +221,11 @@ class Grid2048View(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        if (gameOver || paused || MotionEvent.ACTION_MOVE == event.action && Animator.blockedGrid) {
+        if (
+            gameOver ||
+            paused ||
+            MotionEvent.ACTION_MOVE == event.action && (Animator.blockedGrid || !enableMove)
+        ) {
             return super.onTouchEvent(event)
         }
 
@@ -231,6 +234,7 @@ class Grid2048View(
             val steps = wrapper.steps
 
             if (chains.isNotEmpty()) {
+                enableMove = false
                 Animator.addAndStart(chains)
                 Animator.join(chains) { action, value ->
                     if (Animator.BLOCK_CHANGED == action && !value) {
@@ -246,6 +250,8 @@ class Grid2048View(
                         }
 
                         val newTile = generateRandom()
+                        enableMove = true
+
                         AnimationChain(newTile)
                             .next { BumpTileAnimation(newTile) }
                             .also { Animator.addAndStart(it) }

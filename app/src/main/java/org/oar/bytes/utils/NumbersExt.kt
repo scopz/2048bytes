@@ -6,7 +6,6 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 object NumbersExt {
-    val BIG_DECIMAL_TWO = 2.toBigDecimal()
     val TWO = 2.toBigInteger()
     val THOUSAND_BYTES = 1024.toBigInteger()
     private val THOUSAND_BYTES_BD = THOUSAND_BYTES.toBigDecimal()
@@ -37,4 +36,12 @@ object NumbersExt {
     fun BigInteger.halveValue(times: Int): BigInteger = this.divide(TWO.pow(times))
 
     fun Int.color(context: Context) = context.getColor(this)
+
+    fun Int.toHHMMSS(): String {
+        fun ten(v: Int) = if (v < 10) "0$v" else "$v"
+        val s = this % 60
+        val m = (this / 60) % 60
+        val h = this / 3600
+        return "$h:${ten(m)}:${ten(s)}"
+    }
 }

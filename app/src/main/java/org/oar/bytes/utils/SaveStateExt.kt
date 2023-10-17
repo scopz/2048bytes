@@ -6,7 +6,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.*
 
-object SaveStateUtils {
+object SaveStateExt {
 
     private val Context.statePath: String
         get() = ContextWrapper(this).filesDir.path + "/" + Constants.STATE_FILENAME

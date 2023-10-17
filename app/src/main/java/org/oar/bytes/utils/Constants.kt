@@ -1,13 +1,14 @@
 package org.oar.bytes.utils
 
 import android.graphics.Color
-import org.oar.bytes.utils.NumbersExt.BIG_DECIMAL_TWO
 import org.oar.bytes.utils.NumbersExt.sByte
 import java.math.BigDecimal
 
 object Constants {
 
     const val STATE_FILENAME = "state.save"
+
+    const val SPEED_TIME_REGENERATE = 10
 
     val SCALE_LETTER = listOf(
         "", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"
@@ -25,11 +26,11 @@ object Constants {
         3 to 15000.sByte,
         4 to 40000.sByte,
         5 to 100000.sByte,
-        6 to 230000.sByte,
-        7 to 500000.sByte,
+        6 to 240000.sByte,
+        7 to 600000.sByte,
     ) {
         BigDecimal("3906.25")
-            .multiply(BIG_DECIMAL_TWO.pow(it))
+            .multiply(BigDecimal("2.1").pow(it))
             .toBigInteger()
             .sByte
             .also { a -> println(a.value) }

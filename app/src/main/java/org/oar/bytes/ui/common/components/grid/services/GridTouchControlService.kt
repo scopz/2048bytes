@@ -2,6 +2,7 @@ package org.oar.bytes.ui.common.components.grid.services
 
 import android.view.MotionEvent
 import android.view.View
+import kotlin.math.abs
 
 class GridTouchControlService(
     val parent: View
@@ -25,12 +26,14 @@ class GridTouchControlService(
                 if (!actionDone) {
                     val dx = event.x - dragPosX
                     val dy = event.y - dragPosY
+                    val ax = abs(dx)
+                    val ay = abs(dy)
 
                     return when {
-                        dx > 55 && dx > dy -> Action.MOVE_RIGHT
-                        dx < -55 && dx < dy -> Action.MOVE_LEFT
-                        dy > 55 -> Action.MOVE_DOWN
-                        dy < -55 -> Action.MOVE_UP
+                        dx > 45 && ax > ay -> Action.MOVE_RIGHT
+                        dx < -45 && ax > ay -> Action.MOVE_LEFT
+                        dy > 45 -> Action.MOVE_DOWN
+                        dy < -45 -> Action.MOVE_UP
                         else -> null
                     }
                         ?.apply { actionDone = true }

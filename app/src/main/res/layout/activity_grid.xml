@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:gravity="center_vertical"
     android:layout_marginVertical="32dp"
     android:layout_marginHorizontal="16dp"
 
@@ -14,16 +15,22 @@
         android:id="@+id/levelPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp" />
+        android:layout_marginBottom="16dp" />
 
     <org.oar.bytes.ui.common.components.hints.HintsView
         android:id="@+id/hintsPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="16dp" />
+        android:layout_marginBottom="16dp" />
 
     <org.oar.bytes.ui.common.components.grid.Grid2048View
         android:id="@+id/grid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"/>
+
+    <org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
+        android:id="@+id/idle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

@@ -25,22 +25,8 @@ class HintButtonView(
 
     private var progress = 0f
         set(value) {
-            if (value >= 1) {
-                field = 1f
-                alpha = 1f
-                progressRect.top = measuredWidth
-
-                if (!ready) {
-                    ready = true
-                    setOnReadyListener?.run()
-                }
-            } else {
-                field = value
-                ready = false
-                alpha = .5f
-                progressRect.top = (measuredWidth * (1f-value)).toInt()
-            }
-
+            field = if (value >= 1) 1f else value
+            updateButtonBar()
             postInvalidate()
         }
     var maxValue = 1
@@ -58,20 +44,20 @@ class HintButtonView(
         }
     }
 
-    override fun setEnabled(enabled: Boolean) {
-        super.setEnabled(enabled)
-        alpha = if (enabled && progress >= 1) 1f else 0.5f
-    }
-
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
 
-        alpha = .5f
-        progressRect.top = measuredHeight
         progressRect.bottom = measuredHeight
         progressRect.right = measuredWidth
 
         progressPaint.color = R.color.hintsColor.color(context)
+
+        updateButtonBar()
+    }
+
+    override fun setEnabled(enabled: Boolean) {
+        super.setEnabled(enabled)
+        updateButtonBar()
     }
 
     fun setProgress(current: Int, max: Int = maxValue) {
@@ -85,5 +71,21 @@ class HintButtonView(
     override fun onDraw(canvas: Canvas) {
         canvas.drawRect(progressRect, progressPaint)
         super.onDraw(canvas)
+    }
+
+    private fun updateButtonBar() {
+        if (progress >= 1) {
+            alpha = if (isEnabled) 1f else 0.5f
+            progressRect.top = measuredWidth
+
+            if (!ready) {
+                ready = true
+                setOnReadyListener?.run()
+            }
+        } else {
+            ready = false
+            alpha = .5f
+            progressRect.top = (measuredWidth * (1f-progress)).toInt()
+        }
     }
 }

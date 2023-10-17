@@ -65,6 +65,9 @@ class ProgressBarView(
 
         capacityBar.color = R.color.capacityColor.color(context)
         levelBar.color = R.color.levelColor.color(context)
+
+        if (capacityProgress > 0) capacityRect.right = (measuredWidth * capacityProgress).toInt()
+        if (levelProgress > 0) levelRect.right = (measuredWidth * levelProgress).toInt()
     }
 
     @SuppressLint("DrawAllocation")

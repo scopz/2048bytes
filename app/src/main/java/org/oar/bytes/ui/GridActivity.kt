@@ -6,22 +6,25 @@ import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import org.oar.bytes.R
+import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.grid.Grid2048View
 import org.oar.bytes.ui.common.components.hints.HintsView
+import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
-import org.oar.bytes.utils.SaveStateUtils.deleteState
-import org.oar.bytes.utils.SaveStateUtils.hasState
-import org.oar.bytes.utils.SaveStateUtils.loadState
-import org.oar.bytes.utils.SaveStateUtils.saveState
+import org.oar.bytes.utils.SaveStateExt.deleteState
+import org.oar.bytes.utils.SaveStateExt.hasState
+import org.oar.bytes.utils.SaveStateExt.loadState
+import org.oar.bytes.utils.SaveStateExt.saveState
 
 class GridActivity : AppCompatActivity() {
 
     private val levelPanel by lazy { findViewById<LevelPanelView>(R.id.levelPanel) }
     private val hintsPanel by lazy { findViewById<HintsView>(R.id.hintsPanel) }
     private val grid by lazy { findViewById<Grid2048View>(R.id.grid) }
+    private val idlePanel by lazy { findViewById<IdlePanelView>(R.id.idle) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +37,7 @@ class GridActivity : AppCompatActivity() {
             Data.gridLevel = 1
         }
 
+        idlePanel.setOnProduceByteListener(levelPanel::addBytes)
         grid.setOnProduceByteListener { count, _, value ->
             levelPanel.addBytes(value)
             hintsPanel.addProgress(count)
@@ -42,16 +46,6 @@ class GridActivity : AppCompatActivity() {
         grid.setOnGameOverListener {
             levelPanel.storedValue = 0.sByte
             grid.restart()
-        }
-
-        grid.setOnReadyListener {
-            if (hasState()) {
-                loadState()
-                    ?.also { reloadState(it) }
-                    ?: grid.restart()
-            } else {
-                grid.restart()
-            }
         }
 
         levelPanel.setLevelUpListener {
@@ -73,12 +67,27 @@ class GridActivity : AppCompatActivity() {
         hintsPanel.setOnRevertClickListener {
             grid.revertLast()
         }
+
+        if (hasState()) {
+            loadState()
+                ?.also { reloadState(it) }
+                ?: grid.restart()
+        } else {
+            grid.restart()
+        }
     }
 
     override fun onPause() {
-        val json = grid.toJson()
+        TimeController.setLastShutdownTime()
+        idlePanel.stopTimer()
+
+        val json = JSONObject()
+        TimeController.appendToJson(json)
+        grid.appendToJson(json)
         levelPanel.appendToJson(json)
         hintsPanel.appendToJson(json)
+        idlePanel.appendToJson(json)
+
         json.put("gridLevel", Data.gridLevel)
 
         saveState(json)
@@ -87,8 +96,16 @@ class GridActivity : AppCompatActivity() {
 
     private fun reloadState(json: JSONObject) {
         Data.gridLevel = json.getInt("gridLevel")
+        idlePanel.fromJson(json)
         levelPanel.fromJson(json)
         hintsPanel.fromJson(json)
         grid.fromJson(json)
+        TimeController.fromJson(json)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        TimeController.notifyOfflineTime(this)
+        idlePanel.startTimer()
     }
 }

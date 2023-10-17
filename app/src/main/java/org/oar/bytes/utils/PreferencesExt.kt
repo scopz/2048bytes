@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
 
-object PreferencesUtils {
+object PreferencesExt {
 
     private val Context.preferences: SharedPreferences
         get() = PreferenceManager.getDefaultSharedPreferences(this)

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "capacity": 60,
+    "name": "Dynamo",
+    "sub-device": "Capacitor",
+    "unlock-fee": 1,
+    "upgrade": 1024,
+    "upgrade-sub-device": 1,
+    "percent-upgrade": 10
+  },
+  {
+    "id": 2,
+    "capacity": 120,
+    "name": "Alternator",
+    "sub-device": "Accumulator",
+    "unlock-fee": 3,
+    "upgrade": 51200,
+    "upgrade-sub-device": 2,
+    "percent-upgrade": 10
+  },
+  {
+    "id": 3,
+    "capacity": 180,
+    "name": "Solar Panel",
+    "sub-device": "Extra Panel",
+    "unlock-fee": 5,
+    "upgrade": 5242880,
+    "upgrade-sub-device": 3,
+    "percent-upgrade": 10
+  },
+  {
+    "id": 4,
+    "capacity": 300,
+    "name": "Wind Power",
+    "sub-device": "Air Blast",
+    "unlock-fee": 10,
+    "upgrade": 524288000,
+    "upgrade-sub-device": 5,
+    "percent-upgrade": 10
+  },
+  {
+    "id": 5,
+    "capacity": 600,
+    "name": "Hydroelectricity",
+    "sub-device": "Dam",
+    "unlock-fee": 20,
+    "upgrade": 75161927680,
+    "upgrade-sub-device": 10,
+    "percent-upgrade": 10
+  },
+  {
+    "id": 6,
+    "capacity": 1200,
+    "name": "Nuclear Reactor",
+    "sub-device": "Power Grid",
+    "unlock-fee": 30,
+    "upgrade": 21990232555520,
+    "upgrade-sub-device": 20,
+    "percent-upgrade": 10
+  }
+]

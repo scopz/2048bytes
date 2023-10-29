@@ -2,6 +2,7 @@ package org.oar.bytes.ui.common.components.grid.services
 
 import android.view.MotionEvent
 import android.view.View
+import org.oar.bytes.model.Position
 import kotlin.math.abs
 
 class GridTouchControlService(
@@ -42,4 +43,9 @@ class GridTouchControlService(
         }
         return null
     }
+
+    fun getPosition(event: MotionEvent, size: Int) = Position(
+        (event.x / size).toInt(),
+        (event.y / size).toInt()
+    )
 }

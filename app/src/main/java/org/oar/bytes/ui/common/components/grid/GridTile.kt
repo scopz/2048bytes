@@ -75,10 +75,14 @@ open class GridTile(
     }
 
     fun draw(canvas: Canvas) {
-        canvas.save();
+        canvas.save()
         canvas.translate(pointX.toFloat(), pointY.toFloat())
-        view.draw(canvas);
-        canvas.restore();
+        try {
+            view.draw(canvas)
+        } catch (e: java.lang.IndexOutOfBoundsException) {
+            e.printStackTrace(System.err)
+        }
+        canvas.restore()
     }
 
     fun toJson(): JSONObject {

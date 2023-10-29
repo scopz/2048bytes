@@ -6,6 +6,7 @@ import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.lifecycle.MutableLiveData
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
@@ -18,6 +19,7 @@ import org.oar.bytes.ui.common.components.grid.services.GridAnimatorService
 import org.oar.bytes.ui.common.components.grid.services.GridStepsGeneratorService
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService.Action.*
+import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonArray
@@ -29,6 +31,7 @@ import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import org.oar.bytes.utils.TriConsumer
 import java.util.*
+import java.util.function.Consumer
 
 class Grid2048View(
     context: Context,
@@ -44,6 +47,7 @@ class Grid2048View(
     private val MAX_REVERTS = 10
     private val lastSteps = mutableListOf<List<StepAction>>()
     private val lastSpawn = mutableListOf<Position>()
+    var selectTile: Consumer<Position>? = null
 
     var enableMove = true
     var paused = false
@@ -203,20 +207,68 @@ class Grid2048View(
         return tile
     }
 
-    fun revertLast(): Boolean {
+    fun clearSelectAction() {
+        selectTile = null
+    }
+
+    fun addTileHint(): MutableLiveData<GridTile>? {
+        if (Animator.blockedGrid || tiles.size == 16)
+            return null
+
+        val liveData = MutableLiveData<GridTile>()
+
+        selectTile = Consumer {
+            tiles.findByPosition(it) ?: run {
+                val tile = GridTile(this, baseByteValue.clone(), it, 1, tileSize)
+                tiles.add(tile)
+
+                AnimationChain(tile)
+                    .next { BumpTileAnimation(tile) }
+                    .also(Animator::addAndStart)
+
+                liveData.value = tile
+                selectTile = null
+                lastSpawn.add(it)
+                lastSteps.add(listOf())
+            }
+        }
+        return liveData
+    }
+
+    fun revertLastHint(): Boolean {
         if (Animator.blockedGrid || lastSpawn.isEmpty() || lastSteps.isEmpty())
             return false
 
         val spawnPos = lastSpawn.removeLast()
         val steps = lastSteps.removeLast()
 
-        if (steps.isNotEmpty()) {
-            val chains = animator.animateRevertSteps(tiles, steps, spawnPos)
-            Animator.addAndStart(chains)
+        val chains = animator.animateRevertSteps(tiles, steps, spawnPos)
+        Animator.addAndStart(chains)
+        return true
+    }
 
-            return true
+    fun removeTileHint(): MutableLiveData<GridTile>? {
+        if (Animator.blockedGrid || tiles.size == 0)
+            return null
+
+        val liveData = MutableLiveData<GridTile>()
+
+        selectTile = Consumer {
+            tiles.findByPosition(it)?.also { tile ->
+                tile.zombie = true
+                AnimationChain(tile)
+                    .next { BumpTileAnimation(tile) }
+                    .end { tiles.remove(tile) }
+                    .also(Animator::addAndStart)
+
+                liveData.value = tile
+                selectTile = null
+                lastSpawn.clear()
+                lastSteps.clear()
+            }
         }
-        return false
+
+        return liveData
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -227,6 +279,12 @@ class Grid2048View(
             MotionEvent.ACTION_MOVE == event.action && (Animator.blockedGrid || !enableMove)
         ) {
             return super.onTouchEvent(event)
+        }
+
+        selectTile?.also { consumer ->
+            val position = touchControl.getPosition(event, tileSize)
+            consumer.accept(position)
+            return false
         }
 
         fun startAnimation(wrapper: GridStepsGeneratorService.MoveStepsWrapper) {
@@ -246,7 +304,9 @@ class Grid2048View(
                             val mergedLevels = chains
                                 .mapNotNull<AnimationChain, Int> { it["mergedLevel"] }
 
-                            onProduceByteListener?.accept(mergedLevels.size, mergedLevels.sum(), mergedValue)
+                            runOnUiThread {
+                                onProduceByteListener?.accept(mergedLevels.size, mergedLevels.sum(), mergedValue)
+                            }
                         }
 
                         val newTile = generateRandom()

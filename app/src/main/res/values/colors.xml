@@ -31,4 +31,6 @@
     <color name="capacityColor">#9CE0FF</color>
     <color name="levelColor">#FFCAB2</color>
     <color name="hintsColor">#B8DF8B</color>
+
+    <color name="activeHintColor">#B325FF</color>
 </resources>

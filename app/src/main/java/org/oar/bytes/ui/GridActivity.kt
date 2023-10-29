@@ -4,11 +4,14 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.MutableLiveData
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.grid.Grid2048View
+import org.oar.bytes.ui.common.components.grid.GridTile
+import org.oar.bytes.ui.common.components.hints.HintButtonView
 import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
@@ -37,10 +40,13 @@ class GridActivity : AppCompatActivity() {
             Data.gridLevel = 1
         }
 
-        idlePanel.setOnProduceByteListener(levelPanel::addBytes)
+        idlePanel.setOnProduceByteListener { secs, bytes ->
+            levelPanel.addBytes(bytes)
+            hintsPanel.addProgress(secs)
+        }
         grid.setOnProduceByteListener { count, _, value ->
             levelPanel.addBytes(value)
-            hintsPanel.addProgress(count)
+            hintsPanel.addProgress(count * 10)
         }
 
         grid.setOnGameOverListener {
@@ -64,8 +70,40 @@ class GridActivity : AppCompatActivity() {
             grid.paused = it
         }
 
+        // HINTS
+
+        var gridObserver: MutableLiveData<GridTile>? = null
+        fun cleanObserver() {
+            gridObserver?.apply {
+                removeObservers(this@GridActivity)
+                gridObserver = null
+            }
+        }
+        fun delayedHintAction(button: HintButtonView, action: () -> MutableLiveData<GridTile>?, on: Boolean) {
+            button.active = on
+            if (on) {
+                gridObserver = action()
+                gridObserver?.observe(this) {
+                    button.setProgress(0)
+                    button.active = false
+                    cleanObserver()
+                }
+            } else {
+                grid.clearSelectAction()
+                cleanObserver()
+            }
+        }
+
+        hintsPanel.setOnAddClickListener { on ->
+            delayedHintAction(hintsPanel.add, grid::addTileHint, on)
+        }
+
         hintsPanel.setOnRevertClickListener {
-            grid.revertLast()
+            grid.revertLastHint()
+        }
+
+        hintsPanel.setOnRemoveClickListener { on ->
+            delayedHintAction(hintsPanel.remove, grid::removeTileHint, on)
         }
 
         if (hasState()) {

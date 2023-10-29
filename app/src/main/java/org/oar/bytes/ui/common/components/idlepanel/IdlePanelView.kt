@@ -1,7 +1,6 @@
 package org.oar.bytes.ui.common.components.idlepanel
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -12,12 +11,13 @@ import org.oar.bytes.R
 import org.oar.bytes.features.time.TimeControlled
 import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.model.SByte
+import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Constants.SPEED_TIME_REGENERATE
 import org.oar.bytes.utils.JsonExt.getIntOrNull
 import org.oar.bytes.utils.JsonExt.getStringOrNull
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.NumbersExt.toHHMMSS
-import java.util.function.Consumer
+import java.util.function.BiConsumer
 
 class IdlePanelView(
     context: Context,
@@ -43,8 +43,8 @@ class IdlePanelView(
     private val timeText by lazy { findViewById<TextView>(R.id.time) }
     private val speedText by lazy { findViewById<TextView>(R.id.speed) }
 
-    private var onProduceByteListener: Consumer<SByte>? = null
-    fun setOnProduceByteListener(listener: Consumer<SByte>) { onProduceByteListener = listener }
+    private var onProduceByteListener: BiConsumer<Int, SByte>? = null
+    fun setOnProduceByteListener(listener: BiConsumer<Int, SByte>) { onProduceByteListener = listener }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_idle_panel, this, true)
@@ -63,7 +63,7 @@ class IdlePanelView(
     ): Boolean {
         val secs = (timePassed / 1000).toInt().coerceAtMost(currentTime)
         currentTime -= secs + SPEED_TIME_REGENERATE
-        onProduceByteListener?.accept(bytesSec * secs.sByte)
+        onProduceByteListener?.accept(secs, bytesSec * secs.sByte)
         return true
     }
 
@@ -89,8 +89,8 @@ class IdlePanelView(
             try {
                 while (onGoing) {
                     val initTime = System.nanoTime()
-                    onProduceByteListener?.accept(bytesSec)
-                    (context as Activity).runOnUiThread {
+                    runOnUiThread {
+                        onProduceByteListener?.accept(1, bytesSec)
                         currentTime += SPEED_TIME_REGENERATE
                     }
                     val endTime = System.nanoTime()

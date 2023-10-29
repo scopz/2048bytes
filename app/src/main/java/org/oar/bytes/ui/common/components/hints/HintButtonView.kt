@@ -36,6 +36,15 @@ class HintButtonView(
     private val progressRect = Rect()
     private val progressPaint = Paint()
 
+    var active: Boolean = false
+        set(value) {
+            field = value
+            if (value)
+                setColorFilter(R.color.activeHintColor.color(context))
+            else
+                colorFilter = null
+        }
+
     init {
         super.setOnClickListener {
             if (ready) {
@@ -43,6 +52,7 @@ class HintButtonView(
             }
         }
     }
+
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)

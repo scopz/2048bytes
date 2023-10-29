@@ -23,6 +23,8 @@ object InitialLoad {
             R.color.shade08.color(activity),
             R.color.shade09.color(activity),
             R.color.shade10.color(activity),
+            R.color.shade11.color(activity),
+            R.color.shade12.color(activity),
         ).also { Constants.SHADE_COLORS.addAll(it) }
 
         Constants.BUMP_COLORS.clear()

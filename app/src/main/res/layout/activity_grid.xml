@@ -17,17 +17,11 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp" />
 
-    <org.oar.bytes.ui.common.components.hints.HintsView
-        android:id="@+id/hintsPanel"
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp" />
-
-    <org.oar.bytes.ui.common.components.grid.Grid2048View
-        android:id="@+id/grid"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"/>
 
     <org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
         android:id="@+id/idle"

@@ -17,20 +17,22 @@
     "unlock-fee": 2,
     "upgrade": 5120,
     "upgrade-sub-device": 2,
-    "percent-upgrade": 12
+    "percent-upgrade": 12,
+    "disable": true
   },
   {
-    "id": 2,
+    "id": 3,
     "speed": 5,
     "name": "Vacuum Tube",
     "sub-device": "Baretter",
     "unlock-fee": 3,
     "upgrade": 15360,
     "upgrade-sub-device": 3,
-    "percent-upgrade": 15
+    "percent-upgrade": 15,
+    "disable": true
   },
   {
-    "id": 3,
+    "id": 4,
     "speed": 10,
     "name": "Transistor",
     "sub-device": "System Board",
@@ -40,17 +42,18 @@
     "percent-upgrade": 17
   },
   {
-    "id": 4,
+    "id": 5,
     "speed": 30,
     "name": "Chip",
     "sub-device": "Silicon Base",
     "unlock-fee": 7,
     "upgrade": 204800,
     "upgrade-sub-device": 5,
-    "percent-upgrade": 20
+    "percent-upgrade": 20,
+    "disable": true
   },
   {
-    "id": 5,
+    "id": 6,
     "speed": 100,
     "name": "Microchip",
     "sub-device": "Comparator",
@@ -60,17 +63,18 @@
     "percent-upgrade": 25
   },
   {
-    "id": 6,
+    "id": 7,
     "speed": 300,
     "name": "CPU",
     "sub-device": "FAN",
     "unlock-fee": 12,
     "upgrade": 5242880,
     "upgrade-sub-device": 7,
-    "percent-upgrade": 30
+    "percent-upgrade": 30,
+    "disable": true
   },
   {
-    "id": 7,
+    "id": 8,
     "speed": 1024,
     "name": "GPU",
     "sub-device": "RAM",
@@ -80,17 +84,18 @@
     "percent-upgrade": 35
   },
   {
-    "id": 8,
+    "id": 9,
     "speed": 3072,
     "name": "APU",
     "sub-device": "Northbridge",
     "unlock-fee": 18,
     "upgrade": 104857600,
     "upgrade-sub-device": 9,
-    "percent-upgrade": 40
+    "percent-upgrade": 40,
+    "disable": true
   },
   {
-    "id": 9,
+    "id": 10,
     "speed": 10240,
     "name": "Server",
     "sub-device": "GRID",
@@ -100,17 +105,18 @@
     "percent-upgrade": 45
   },
   {
-    "id": 10,
+    "id": 11,
     "speed": 30720,
     "name": "Cluster",
     "sub-device": "Sys-bridge",
     "unlock-fee": 24,
     "upgrade": 2684354560,
     "upgrade-sub-device": 11,
-    "percent-upgrade": 50
+    "percent-upgrade": 50,
+    "disable": true
   },
   {
-    "id": 11,
+    "id": 12,
     "speed": 102400,
     "name": "Cloud",
     "sub-device": "Darknet",
@@ -120,17 +126,18 @@
     "percent-upgrade": 55
   },
   {
-    "id": 12,
+    "id": 13,
     "speed": 307200,
     "name": "Terminator",
     "sub-device": "AI-3000",
     "unlock-fee": 30,
     "upgrade": 75161927680,
     "upgrade-sub-device": 13,
-    "percent-upgrade": 60
+    "percent-upgrade": 60,
+    "disable": true
   },
   {
-    "id": 13,
+    "id": 14,
     "speed": 1048576,
     "name": "Quantum",
     "sub-device": "D-Wave",
@@ -140,13 +147,14 @@
     "percent-upgrade": 65
   },
   {
-    "id": 14,
+    "id": 15,
     "speed": 3145728,
     "name": "Alien Tech",
-    "sub-device": "???????",
+    "sub-device": "42 CUBE",
     "unlock-fee": 40,
-    "upgrade": 9,
+    "upgrade": 2199023255552,
     "upgrade-sub-device": 15,
-    "percent-upgrade": 70
+    "percent-upgrade": 70,
+    "disable": true
   }
 ]

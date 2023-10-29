@@ -8,7 +8,7 @@ object Constants {
 
     const val STATE_FILENAME = "state.save"
 
-    const val SPEED_TIME_REGENERATE = 10
+    const val SPEED_TIME_REGENERATE = 300
 
     val SCALE_LETTER = listOf(
         "", "K", "M", "G", "T", "P", "E", "Z", "Y", "R", "Q"

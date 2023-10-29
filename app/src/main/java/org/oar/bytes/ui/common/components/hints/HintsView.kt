@@ -42,24 +42,11 @@ class HintsView(
                 onAddClickListener?.accept(true)
             }
         }
-        // DEBUG PURPOSES
-        add.setOnLongClickListener {
-            if (canActivate()) {
-                onAddClickListener?.accept(true)
-            }
-            true
-        }
 
         revert = findViewById(R.id.revertLastBtn)
         revert.maxValue = 7500
         revert.setOnClickListener {
             onRevertClickListener?.run()
-            revert.setProgress(0)
-        }
-        // DEBUG PURPOSES
-        revert.setOnLongClickListener {
-            onRevertClickListener?.run()
-            true
         }
 
 
@@ -71,13 +58,6 @@ class HintsView(
             } else if (canActivate()) {
                 onRemoveClickListener?.accept(true)
             }
-        }
-        // DEBUG PURPOSES
-        remove.setOnLongClickListener {
-            if (canActivate()) {
-                onRemoveClickListener?.accept(true)
-            }
-            true
         }
 
         hints = listOf(revert, add, remove)

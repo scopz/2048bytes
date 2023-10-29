@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
+import android.view.View
 import android.widget.FrameLayout
 import android.widget.TextView
 import org.json.JSONObject
@@ -14,7 +15,6 @@ import org.oar.bytes.model.SByte
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Constants.SPEED_TIME_REGENERATE
 import org.oar.bytes.utils.JsonExt.getIntOrNull
-import org.oar.bytes.utils.JsonExt.getStringOrNull
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.NumbersExt.toHHMMSS
 import java.util.function.BiConsumer
@@ -27,13 +27,13 @@ class IdlePanelView(
     private var onGoing = false
     private var thread: IdleTick? = null
 
-    private var maxTime = 60
+    var maxTime = 0
     private var currentTime = 0
         set(value) {
             field = if (value > maxTime) maxTime else value
             timeText.text = field.toHHMMSS()
         }
-    private var bytesSec = 1.sByte
+    var bytesSec = 0.sByte
         set(value) {
             field = value
             @SuppressLint("SetTextI18n")
@@ -42,6 +42,12 @@ class IdlePanelView(
 
     private val timeText by lazy { findViewById<TextView>(R.id.time) }
     private val speedText by lazy { findViewById<TextView>(R.id.speed) }
+
+    private var onClickTimeListener: OnClickListener? = null
+    fun setOnClickTimeListener(listener: OnClickListener) { onClickTimeListener = listener }
+
+    private var onClickSpeedListener: OnClickListener? = null
+    fun setOnClickSpeedListener(listener: OnClickListener) { onClickSpeedListener = listener }
 
     private var onProduceByteListener: BiConsumer<Int, SByte>? = null
     fun setOnProduceByteListener(listener: BiConsumer<Int, SByte>) { onProduceByteListener = listener }
@@ -53,7 +59,10 @@ class IdlePanelView(
         startTimer()
 
         currentTime = 0
-        bytesSec = 1.sByte
+        bytesSec = 0.sByte
+
+        findViewById<View>(R.id.timeButton).setOnClickListener { onClickTimeListener?.onClick(it) }
+        findViewById<View>(R.id.speedButton).setOnClickListener { onClickSpeedListener?.onClick(it) }
     }
 
     override fun notifyOfflineTime(
@@ -107,17 +116,11 @@ class IdlePanelView(
 
     fun appendToJson(json: JSONObject) {
         json.apply {
-            put("idleBytes", bytesSec.value.toString())
-            put("maxIdleTime", maxTime)
             put("idleTime", currentTime)
         }
     }
 
     fun fromJson(json: JSONObject) {
-        maxTime = json.getIntOrNull("maxIdleTime") ?: 60
         currentTime = json.getIntOrNull("idleTime") ?: 0
-        bytesSec = json.getStringOrNull("idleBytes")
-            ?.toBigInteger()?.sByte
-            ?: 1.sByte
     }
 }

@@ -82,6 +82,14 @@ class LevelPanelView(
     fun setOnCapacityReachedListener(listener: Consumer<Boolean>) { onCapacityReachedListener = listener }
 
     init {
+        Data.getBytes = { storedValue }
+        Data.consumeBytes = { bytes ->
+            if (storedValue >= bytes) {
+                storedValue -= bytes
+                true
+            } else false
+        }
+
         LayoutInflater.from(context).inflate(R.layout.component_level_panel, this, true)
 
         findViewById<TextView>(R.id.levelUpButton).setOnClickListener {

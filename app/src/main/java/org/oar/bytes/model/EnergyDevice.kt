@@ -1,5 +1,7 @@
 package org.oar.bytes.model
 
+import org.oar.bytes.utils.NumbersExt.sByte
+
 data class EnergyDevice(
     val id: Int,
     val capacity: Int,
@@ -9,4 +11,8 @@ data class EnergyDevice(
     val upgradeFee: SByte,
     val upgradeSubDeviceFee: Int,
     val subDevicePercent: Int
-)
+) {
+    fun cost(level: Int): SByte {
+        return upgradeFee * (level + 1).sByte
+    }
+}

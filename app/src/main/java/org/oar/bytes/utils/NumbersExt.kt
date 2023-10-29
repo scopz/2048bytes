@@ -44,4 +44,6 @@ object NumbersExt {
         val h = this / 3600
         return "$h:${ten(m)}:${ten(s)}"
     }
+
+    fun Int.toMins() = this / 60
 }

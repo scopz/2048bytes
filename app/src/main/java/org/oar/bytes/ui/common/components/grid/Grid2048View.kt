@@ -15,6 +15,7 @@ import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.BumpTileAnimation
 import org.oar.bytes.ui.common.components.grid.model.StepAction
+import org.oar.bytes.ui.common.components.grid.model.StepMove
 import org.oar.bytes.ui.common.components.grid.services.GridAnimatorService
 import org.oar.bytes.ui.common.components.grid.services.GridStepsGeneratorService
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService
@@ -22,6 +23,7 @@ import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService.
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.jsonArray
+import org.oar.bytes.utils.JsonExt.map
 import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.ListExt.active
@@ -46,7 +48,7 @@ class Grid2048View(
 
     private val MAX_REVERTS = 10
     private val lastSteps = mutableListOf<List<StepAction>>()
-    private val lastSpawn = mutableListOf<Position>()
+    private val lastSpawn = mutableListOf<Position?>()
     var selectTile: Consumer<Position>? = null
 
     var enableMove = true
@@ -126,7 +128,7 @@ class Grid2048View(
                 .also { put("lastSteps", it) }
 
             lastSpawn
-                .map { listOf(it.x, it.y).jsonArray() }
+                .map { if (it == null) null else listOf(it.x, it.y).jsonArray() }
                 .jsonArray()
                 .also { put("lastSpawns", it) }
         }
@@ -158,7 +160,8 @@ class Grid2048View(
         this.lastSpawn.clear()
         if (json.has("lastSpawns")) {
             val lastSpawn = json.getJSONArray("lastSpawns")
-                .mapJsonArray { Position(it.getInt(0), it.getInt(1)) }
+                .map { it, idx -> if (it.isNull(idx)) null else it.getJSONArray(idx) }
+                .map { if (it == null) null else Position(it.getInt(0), it.getInt(1)) }
             this.lastSpawn.addAll(lastSpawn)
         }
     }
@@ -209,6 +212,34 @@ class Grid2048View(
 
     fun clearSelectAction() {
         selectTile = null
+    }
+
+    fun swapTilesHint() : MutableLiveData<GridTile>? {
+        if (Animator.blockedGrid || tiles.size < 2)
+            return null
+
+        val liveData = MutableLiveData<GridTile>()
+
+        selectTile = Consumer { posA ->
+            val tileA = tiles.findByPosition(posA) ?: return@Consumer
+
+            selectTile = Consumer { posB ->
+                val tileB = tiles.findByPosition(posB)
+
+                if (tileB != null && posA.touches(posB)) {
+                    listOf(
+                        animator.addMoveAnimation(tileA, posB),
+                        animator.addMoveAnimation(tileB, posA),
+                    ).also { Animator.addAndStart(it) }
+
+                    liveData.value = tileA
+                    selectTile = null
+                    lastSteps.add(listOf(StepMove(posA, posB), StepMove(posB, posA)))
+                    lastSpawn.add(null)
+                }
+            }
+        }
+        return liveData
     }
 
     fun addTileHint(): MutableLiveData<GridTile>? {

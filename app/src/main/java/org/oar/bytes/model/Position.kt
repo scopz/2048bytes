@@ -1,5 +1,7 @@
 package org.oar.bytes.model
 
+import kotlin.math.abs
+
 data class Position(
     val x: Int,
     val y: Int
@@ -38,6 +40,12 @@ data class Position(
     override fun compareTo(other: Position): Int {
         val xCompared = x.compareTo(other.x)
         return if (xCompared == 0) y.compareTo(other.y) else xCompared
+    }
+
+    fun touches(other: Position): Boolean {
+        val dx = abs(x - other.x)
+        val dy = abs(y - other.y)
+        return dx == 0 && dy == 1 || dx == 1 && dy == 0
     }
 }
 

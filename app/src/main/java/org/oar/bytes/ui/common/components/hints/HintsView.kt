@@ -15,6 +15,9 @@ class HintsView(
     attr: AttributeSet? = null
 ) : FrameLayout(context, attr) {
 
+    private var onSwapClickListener: Consumer<Boolean>? = null
+    fun setOnSwapClickListener(listener: Consumer<Boolean>) { onSwapClickListener = listener }
+
     private var onAddClickListener: Consumer<Boolean>? = null
     fun setOnAddClickListener(listener: Consumer<Boolean>) { onAddClickListener = listener }
 
@@ -26,6 +29,7 @@ class HintsView(
 
     private val hints: List<HintButtonView>
 
+    val swap: HintButtonView
     val add: HintButtonView
     val revert: HintButtonView
     val remove: HintButtonView
@@ -33,8 +37,18 @@ class HintsView(
     init {
         LayoutInflater.from(context).inflate(R.layout.component_hints_bar, this, true)
 
+        swap = findViewById(R.id.swapBtn)
+        swap.maxValue = 7200 // 2h
+        swap.setOnClickListener {
+            if (swap.active) {
+                onSwapClickListener?.accept(false)
+            } else if (canActivate()) {
+                onSwapClickListener?.accept(true)
+            }
+        }
+
         add = findViewById(R.id.addBtn)
-        add.maxValue = 3600
+        add.maxValue = 14400 // 4h
         add.setOnClickListener {
             if (add.active) {
                 onAddClickListener?.accept(false)
@@ -44,14 +58,14 @@ class HintsView(
         }
 
         revert = findViewById(R.id.revertLastBtn)
-        revert.maxValue = 7500
+        revert.maxValue = 21600 // 6h
         revert.setOnClickListener {
             onRevertClickListener?.run()
         }
 
 
         remove = findViewById(R.id.removeBtn)
-        remove.maxValue = 14000
+        remove.maxValue = 28800 // 8h
         remove.setOnClickListener {
             if (remove.active) {
                 onRemoveClickListener?.accept(false)
@@ -60,7 +74,7 @@ class HintsView(
             }
         }
 
-        hints = listOf(revert, add, remove)
+        hints = listOf(swap, add, revert, remove)
     }
 
     private fun canActivate() = hints.none { it.active }

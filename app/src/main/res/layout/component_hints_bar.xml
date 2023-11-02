@@ -7,6 +7,16 @@
     android:orientation="horizontal" >
 
     <org.oar.bytes.ui.common.components.hints.HintButtonView
+        android:id="@+id/swapBtn"
+        android:layout_width="46dp"
+        android:layout_height="46dp"
+        android:layout_marginHorizontal="8dp"
+        android:padding="10dp"
+        android:gravity="center"
+        android:background="@color/itemDefaultBackground"
+        android:src="@drawable/swap_24px" />
+
+    <org.oar.bytes.ui.common.components.hints.HintButtonView
         android:id="@+id/addBtn"
         android:layout_width="46dp"
         android:layout_height="46dp"
@@ -15,7 +25,6 @@
         android:gravity="center"
         android:background="@color/itemDefaultBackground"
         android:src="@drawable/add_24px" />
-
 
     <org.oar.bytes.ui.common.components.hints.HintButtonView
         android:id="@+id/revertLastBtn"

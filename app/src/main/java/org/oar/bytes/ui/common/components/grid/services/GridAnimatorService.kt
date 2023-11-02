@@ -19,7 +19,7 @@ class GridAnimatorService(
     fun animateRevertSteps(
         tiles: MutableList<GridTile>,
         steps: List<StepAction>,
-        spawnPos: Position
+        spawnPos: Position? = null
     ): List<AnimationChain> {
 
         return steps
@@ -54,13 +54,14 @@ class GridAnimatorService(
             .flatten()
             .toMutableList()
             .let { list ->
-                val tile = tiles.findByPosition(spawnPos)!!
-                AnimationChain(tile)
-                    .start { tile.zombie = true }
-                    .next { BumpTileAnimation(tile) }
-                    .end { tiles.remove(tile) }
-                    .also { list.add(it) }
-
+                if (spawnPos != null) {
+                    val tile = tiles.findByPosition(spawnPos)!!
+                    AnimationChain(tile)
+                        .start { tile.zombie = true }
+                        .next { BumpTileAnimation(tile) }
+                        .end { tiles.remove(tile) }
+                        .also { list.add(it) }
+                }
                 AnimationChain.reduce(list)
             }
     }

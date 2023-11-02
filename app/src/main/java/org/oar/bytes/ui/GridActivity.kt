@@ -148,6 +148,10 @@ class GridActivity : AppCompatActivity() {
             }
         }
 
+        hintsPanel.setOnSwapClickListener { on ->
+            delayedHintAction(hintsPanel.swap, grid::swapTilesHint, on)
+        }
+
         hintsPanel.setOnAddClickListener { on ->
             delayedHintAction(hintsPanel.add, grid::addTileHint, on)
         }

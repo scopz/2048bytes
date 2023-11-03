@@ -48,5 +48,20 @@ object NumbersExt {
         return "$h:${ten(m)}:${ten(s)}"
     }
 
+    fun Int.toDynamicHHMMSS(): String {
+        fun ten(v: Int) = if (v < 10) "0$v" else "$v"
+        val s = this % 60
+        val m = (this / 60) % 60
+        val h = this / 3600
+        return if (h != 0)
+            "$h:${ten(m)}:${ten(s)}"
+        else if (m != 0)
+            "$m:${ten(s)}"
+        else if (s != 0)
+            "$s"
+        else
+            ""
+    }
+
     fun Int.toMins() = this / 60
 }

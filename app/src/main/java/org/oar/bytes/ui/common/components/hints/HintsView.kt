@@ -27,7 +27,7 @@ class HintsView(
     private var onRemoveClickListener: Consumer<Boolean>? = null
     fun setOnRemoveClickListener(listener: Consumer<Boolean>) { onRemoveClickListener = listener }
 
-    private val hints: List<HintButtonView>
+    val hints: List<HintButtonView>
 
     val swap: HintButtonView
     val add: HintButtonView
@@ -81,6 +81,10 @@ class HintsView(
 
     fun addProgress(value: Int) {
         hints.forEach { it.addProgress(value) }
+    }
+
+    fun addProgress(value: Int, index: Int) {
+        hints[index].addProgress(value)
     }
 
     fun appendToJson(json: JSONObject) {

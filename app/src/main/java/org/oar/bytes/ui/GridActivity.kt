@@ -14,6 +14,7 @@ import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.features.time.TimeController
+import org.oar.bytes.ui.animations.HintsProgressAnimation
 import org.oar.bytes.ui.animations.LevelProgressAnimation
 import org.oar.bytes.ui.animations.WaitAnimation
 import org.oar.bytes.ui.common.InitialLoad
@@ -98,21 +99,20 @@ class GridActivity : AppCompatActivity() {
             pager.currentItem = if (pager.currentItem == 2) 1 else 2
         }
 
-        var animatingLevelPanel = false
         idlePanel.setOnProduceByteListener { secs, bytes, animate ->
-            if (!animatingLevelPanel) {
                 if (animate) {
-                    AnimationChain(idlePanel)
-                        .start { animatingLevelPanel = true }
-                        .next { WaitAnimation(750) }
-                        .next { LevelProgressAnimation(levelPanel, bytes, 1000) }
-                        .end { animatingLevelPanel = false }
-                        .also { Animator.addAndStart(it) }
+                    Animator.addAndStart(listOf(
+                        AnimationChain(idlePanel)
+                            .next { WaitAnimation(1000) }
+                            .next { LevelProgressAnimation(levelPanel, bytes, 1000) },
+                        AnimationChain(hintsPanel)
+                            .next { WaitAnimation(1000) }
+                            .next { HintsProgressAnimation(hintsPanel, secs, 1000) }
+                    ))
                 } else {
                     levelPanel.addBytes(bytes)
+                    hintsPanel.addProgress(secs)
                 }
-            }
-            hintsPanel.addProgress(secs)
         }
         grid.setOnProduceByteListener { count, _, value ->
             levelPanel.addBytes(value)

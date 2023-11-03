@@ -20,6 +20,7 @@ object Animator {
         synchronized(listeners) {
             listeners.add(AnimationListener(list, consumer))
         }
+        checkListeners()
     }
 
     fun addAndStart(chain: AnimationChain) {
@@ -62,6 +63,29 @@ object Animator {
 
         if (thread == null) {
             thread = Framer().apply { start() }
+        }
+    }
+
+    fun stopAll() {
+        animations.toList().forEach {
+            it.animation.endAnimation()
+            it.animation.applyAnimation()
+            it.chain.end()
+        }
+
+        listeners.forEach { listener ->
+            listener.consumer.accept(END_ANIMATION, true)
+            if (listener.blocked) {
+                listener.consumer.accept(BLOCK_CHANGED, false)
+            }
+        }
+
+        animations.clear()
+        listeners.clear()
+
+        thread?.apply {
+            interrupt()
+            thread = null
         }
     }
 
@@ -152,9 +176,7 @@ object Animator {
                         sleep(sleepTime)
                     }
                 }
-            } catch (e: InterruptedException) {
-                e.printStackTrace()
-            }
+            } catch (_: InterruptedException) { }
             thread = null
         }
     }

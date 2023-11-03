@@ -2,4 +2,10 @@
     <string name="app_name">2048bytes</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
+
+    <string name="btn_confirm">Confirm</string>
+    <string name="btn_cancel">Cancel</string>
+
+    <string name="title_confirm">Confirm</string>
+    <string name="restart_confirm">Do you really want to restart?</string>
 </resources>

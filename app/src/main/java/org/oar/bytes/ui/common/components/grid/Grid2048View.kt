@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
 import android.util.AttributeSet
+import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import androidx.lifecycle.MutableLiveData
@@ -69,6 +70,9 @@ class Grid2048View(
 
     private var onGameOverListener: Runnable? = null
     fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
+
+    private var onLongClickListener: OnLongClickListener? = null
+    override fun setOnLongClickListener(listener: OnLongClickListener?) { onLongClickListener = listener }
 
     init {
         setBackgroundColor(R.color.itemDefaultBackground.color(context))
@@ -172,19 +176,19 @@ class Grid2048View(
                 return false
             }
             (0 until 4).forEach { xy ->
-                val first = tiles.findByPosition(Position(0, xy))!!
-                val left = tiles.findByPosition(first.pos.right!!)!!
+                val first = tiles.findByPosition(Position(0, xy)) ?: return false
+                val left = tiles.findByPosition(first.pos.right!!) ?: return false
                 if (first.value == left.value) return false
-                val right = tiles.findByPosition(left.pos.right!!)!!
+                val right = tiles.findByPosition(left.pos.right!!) ?: return false
                 if (left.value == right.value) return false
-                val last = tiles.findByPosition(right.pos.right!!)!!
+                val last = tiles.findByPosition(right.pos.right!!) ?: return false
                 if (right.value == last.value) return false
-                val firstY = tiles.findByPosition(Position(xy, 0))!!
-                val leftY = tiles.findByPosition(firstY.pos.bottom!!)!!
+                val firstY = tiles.findByPosition(Position(xy, 0)) ?: return false
+                val leftY = tiles.findByPosition(firstY.pos.bottom!!) ?: return false
                 if (firstY.value == leftY.value) return false
-                val rightY = tiles.findByPosition(leftY.pos.bottom!!)!!
+                val rightY = tiles.findByPosition(leftY.pos.bottom!!) ?: return false
                 if (leftY.value == rightY.value) return false
-                val lastY = tiles.findByPosition(rightY.pos.bottom!!)!!
+                val lastY = tiles.findByPosition(rightY.pos.bottom!!) ?: return false
                 if (rightY.value == lastY.value) return false
             }
             return true
@@ -302,10 +306,15 @@ class Grid2048View(
         return liveData
     }
 
+    private val gestureDetector =  GestureDetector(context, object: GestureDetector.SimpleOnGestureListener() {
+        override fun onLongPress(e: MotionEvent) {
+            onLongClickListener?.onLongClick(this@Grid2048View)
+        }
+    })
+
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         if (
-            gameOver ||
             paused ||
             MotionEvent.ACTION_MOVE == event.action && (Animator.blockedGrid || !enableMove)
         ) {
@@ -316,6 +325,12 @@ class Grid2048View(
             val position = touchControl.getPosition(event, tileSize)
             consumer.accept(position)
             return false
+        }
+
+        gestureDetector.onTouchEvent(event)
+
+        if (gameOver) {
+            return super.onTouchEvent(event)
         }
 
         fun startAnimation(wrapper: GridStepsGeneratorService.MoveStepsWrapper) {
@@ -356,6 +371,8 @@ class Grid2048View(
                         while (lastSpawn.size > MAX_REVERTS) {
                             lastSpawn.removeFirst()
                         }
+
+                        if (gameOver) onGameOverListener?.run()
                     }
                 }
             }

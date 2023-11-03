@@ -17,6 +17,7 @@ import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.ui.animations.HintsProgressAnimation
 import org.oar.bytes.ui.animations.LevelProgressAnimation
 import org.oar.bytes.ui.animations.WaitAnimation
+import org.oar.bytes.ui.common.ConfirmDialog
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.devices.SpeedDeviceView
 import org.oar.bytes.ui.common.components.devices.TimeEnergyView
@@ -120,8 +121,17 @@ class GridActivity : AppCompatActivity() {
         }
 
         grid.setOnGameOverListener {
-            levelPanel.storedValue = 0.sByte
-            grid.restart()
+            //levelPanel.storedValue = 0.sByte
+            //grid.restart()
+        }
+
+        grid.setOnLongClickListener {
+            ConfirmDialog.show(this, R.string.title_confirm, R.string.restart_confirm, {
+                Animator.stopAll()
+                levelPanel.storedValue = 0.sByte
+                grid.restart()
+            })
+            true
         }
 
         levelPanel.setLevelUpListener {

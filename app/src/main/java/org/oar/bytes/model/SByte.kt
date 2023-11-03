@@ -82,4 +82,5 @@ data class SByte (
     operator fun times(byte: SByte) = SByte(value.multiply(byte.value))
     operator fun div(byte: SByte) = SByte(value.divide(byte.value))
     operator fun compareTo(byte: SByte) = value.compareTo(byte.value)
+    fun coerceAtMost(other: SByte) = value.coerceAtMost(other.value).sByte
 }

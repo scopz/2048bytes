@@ -25,8 +25,8 @@ class LevelPanelView(
 
     private val progressBar by lazy { findViewById<ProgressBarView>(R.id.progressBar) }
 
-    private var capacity = 256.sByte
-        set(value) {
+    var capacity = 256.sByte
+        private set(value) {
             field = value
             progressBar.setCapacityProgress(storedValue, capacity)
         }

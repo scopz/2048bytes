@@ -11,7 +11,11 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
 import org.json.JSONObject
 import org.oar.bytes.R
+import org.oar.bytes.features.animate.AnimationChain
+import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.features.time.TimeController
+import org.oar.bytes.ui.animations.LevelProgressAnimation
+import org.oar.bytes.ui.animations.WaitAnimation
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.devices.SpeedDeviceView
 import org.oar.bytes.ui.common.components.devices.TimeEnergyView
@@ -94,8 +98,20 @@ class GridActivity : AppCompatActivity() {
             pager.currentItem = if (pager.currentItem == 2) 1 else 2
         }
 
-        idlePanel.setOnProduceByteListener { secs, bytes ->
-            levelPanel.addBytes(bytes)
+        var animatingLevelPanel = false
+        idlePanel.setOnProduceByteListener { secs, bytes, animate ->
+            if (!animatingLevelPanel) {
+                if (animate) {
+                    AnimationChain(idlePanel)
+                        .start { animatingLevelPanel = true }
+                        .next { WaitAnimation(750) }
+                        .next { LevelProgressAnimation(levelPanel, bytes, 1000) }
+                        .end { animatingLevelPanel = false }
+                        .also { Animator.addAndStart(it) }
+                } else {
+                    levelPanel.addBytes(bytes)
+                }
+            }
             hintsPanel.addProgress(secs)
         }
         grid.setOnProduceByteListener { count, _, value ->

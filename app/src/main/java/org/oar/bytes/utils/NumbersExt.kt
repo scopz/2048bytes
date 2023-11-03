@@ -13,6 +13,9 @@ object NumbersExt {
     val BigInteger.sByte: SByte
         get() = SByte(this)
 
+    val BigDecimal.sByte: SByte
+        get() = this.toBigInteger().sByte
+
     val Int.sByte: SByte
         get() = this.toBigInteger().sByte
 

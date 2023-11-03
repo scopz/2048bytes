@@ -17,7 +17,7 @@ import org.oar.bytes.utils.Constants.SPEED_TIME_REGENERATE
 import org.oar.bytes.utils.JsonExt.getIntOrNull
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.NumbersExt.toHHMMSS
-import java.util.function.BiConsumer
+import org.oar.bytes.utils.TriConsumer
 
 class IdlePanelView(
     context: Context,
@@ -49,8 +49,8 @@ class IdlePanelView(
     private var onClickSpeedListener: OnClickListener? = null
     fun setOnClickSpeedListener(listener: OnClickListener) { onClickSpeedListener = listener }
 
-    private var onProduceByteListener: BiConsumer<Int, SByte>? = null
-    fun setOnProduceByteListener(listener: BiConsumer<Int, SByte>) { onProduceByteListener = listener }
+    private var onProduceByteListener: TriConsumer<Int, SByte, Boolean>? = null
+    fun setOnProduceByteListener(listener: TriConsumer<Int, SByte, Boolean>) { onProduceByteListener = listener }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_idle_panel, this, true)
@@ -72,7 +72,7 @@ class IdlePanelView(
     ): Boolean {
         val secs = (timePassed / 1000).toInt().coerceAtMost(currentTime)
         currentTime -= secs + SPEED_TIME_REGENERATE
-        onProduceByteListener?.accept(secs, bytesSec * secs.sByte)
+        onProduceByteListener?.accept(secs, bytesSec * secs.sByte, true)
         return true
     }
 
@@ -99,7 +99,7 @@ class IdlePanelView(
                 while (onGoing) {
                     val initTime = System.nanoTime()
                     runOnUiThread {
-                        onProduceByteListener?.accept(1, bytesSec)
+                        onProduceByteListener?.accept(1, bytesSec, false)
                         currentTime += SPEED_TIME_REGENERATE
                     }
                     val endTime = System.nanoTime()

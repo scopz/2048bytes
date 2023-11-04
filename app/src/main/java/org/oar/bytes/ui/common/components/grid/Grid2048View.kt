@@ -218,34 +218,6 @@ class Grid2048View(
         selectTile = null
     }
 
-    fun swapTilesHint() : MutableLiveData<GridTile>? {
-        if (Animator.blockedGrid || tiles.size < 2)
-            return null
-
-        val liveData = MutableLiveData<GridTile>()
-
-        selectTile = Consumer { posA ->
-            val tileA = tiles.findByPosition(posA) ?: return@Consumer
-
-            selectTile = Consumer { posB ->
-                val tileB = tiles.findByPosition(posB)
-
-                if (tileB != null && posA.touches(posB)) {
-                    listOf(
-                        animator.addMoveAnimation(tileA, posB),
-                        animator.addMoveAnimation(tileB, posA),
-                    ).also { Animator.addAndStart(it) }
-
-                    liveData.value = tileA
-                    selectTile = null
-                    lastSteps.add(listOf(StepMove(posA, posB), StepMove(posB, posA)))
-                    lastSpawn.add(null)
-                }
-            }
-        }
-        return liveData
-    }
-
     fun addTileHint(): MutableLiveData<GridTile>? {
         if (Animator.blockedGrid || tiles.size == 16)
             return null
@@ -280,6 +252,34 @@ class Grid2048View(
         val chains = animator.animateRevertSteps(tiles, steps, spawnPos)
         Animator.addAndStart(chains)
         return true
+    }
+
+    fun swapTilesHint() : MutableLiveData<GridTile>? {
+        if (Animator.blockedGrid || tiles.size < 2)
+            return null
+
+        val liveData = MutableLiveData<GridTile>()
+
+        selectTile = Consumer { posA ->
+            val tileA = tiles.findByPosition(posA) ?: return@Consumer
+
+            selectTile = Consumer { posB ->
+                val tileB = tiles.findByPosition(posB)
+
+                if (tileB != null && posA.touches(posB)) {
+                    listOf(
+                        animator.addMoveAnimation(tileA, posB),
+                        animator.addMoveAnimation(tileB, posA),
+                    ).also { Animator.addAndStart(it) }
+
+                    liveData.value = tileA
+                    selectTile = null
+                    lastSteps.add(listOf(StepMove(posA, posB), StepMove(posB, posA)))
+                    lastSpawn.add(null)
+                }
+            }
+        }
+        return liveData
     }
 
     fun removeTileHint(): MutableLiveData<GridTile>? {

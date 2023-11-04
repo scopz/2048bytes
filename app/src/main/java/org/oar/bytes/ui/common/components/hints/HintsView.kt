@@ -15,40 +15,30 @@ class HintsView(
     attr: AttributeSet? = null
 ) : FrameLayout(context, attr) {
 
-    private var onSwapClickListener: Consumer<Boolean>? = null
-    fun setOnSwapClickListener(listener: Consumer<Boolean>) { onSwapClickListener = listener }
-
     private var onAddClickListener: Consumer<Boolean>? = null
     fun setOnAddClickListener(listener: Consumer<Boolean>) { onAddClickListener = listener }
 
     private var onRevertClickListener: Runnable? = null
     fun setOnRevertClickListener(listener: Runnable) { onRevertClickListener = listener }
 
+    private var onSwapClickListener: Consumer<Boolean>? = null
+    fun setOnSwapClickListener(listener: Consumer<Boolean>) { onSwapClickListener = listener }
+
     private var onRemoveClickListener: Consumer<Boolean>? = null
     fun setOnRemoveClickListener(listener: Consumer<Boolean>) { onRemoveClickListener = listener }
 
     val hints: List<HintButtonView>
 
-    val swap: HintButtonView
     val add: HintButtonView
     val revert: HintButtonView
+    val swap: HintButtonView
     val remove: HintButtonView
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_hints_bar, this, true)
 
-        swap = findViewById(R.id.swapBtn)
-        swap.maxValue = 7200 // 2h
-        swap.setOnClickListener {
-            if (swap.active) {
-                onSwapClickListener?.accept(false)
-            } else if (canActivate()) {
-                onSwapClickListener?.accept(true)
-            }
-        }
-
         add = findViewById(R.id.addBtn)
-        add.maxValue = 14400 // 4h
+        add.maxValue = 10800 // 3h
         add.setOnClickListener {
             if (add.active) {
                 onAddClickListener?.accept(false)
@@ -58,14 +48,23 @@ class HintsView(
         }
 
         revert = findViewById(R.id.revertLastBtn)
-        revert.maxValue = 21600 // 6h
+        revert.maxValue = 25200 // 7h
         revert.setOnClickListener {
             onRevertClickListener?.run()
         }
 
+        swap = findViewById(R.id.swapBtn)
+        swap.maxValue = 43200 // 12h
+        swap.setOnClickListener {
+            if (swap.active) {
+                onSwapClickListener?.accept(false)
+            } else if (canActivate()) {
+                onSwapClickListener?.accept(true)
+            }
+        }
 
         remove = findViewById(R.id.removeBtn)
-        remove.maxValue = 28800 // 8h
+        remove.maxValue = 64800 // 18h
         remove.setOnClickListener {
             if (remove.active) {
                 onRemoveClickListener?.accept(false)
@@ -74,7 +73,7 @@ class HintsView(
             }
         }
 
-        hints = listOf(swap, add, revert, remove)
+        hints = listOf(add, revert, swap, remove)
     }
 
     private fun canActivate() = hints.none { it.active }

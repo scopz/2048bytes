@@ -174,10 +174,6 @@ class GridActivity : AppCompatActivity() {
             }
         }
 
-        hintsPanel.setOnSwapClickListener { on ->
-            delayedHintAction(hintsPanel.swap, grid::swapTilesHint, on)
-        }
-
         hintsPanel.setOnAddClickListener { on ->
             delayedHintAction(hintsPanel.add, grid::addTileHint, on)
         }
@@ -186,6 +182,10 @@ class GridActivity : AppCompatActivity() {
             if (grid.revertLastHint()) {
                 hintsPanel.revert.setProgress(0)
             }
+        }
+
+        hintsPanel.setOnSwapClickListener { on ->
+            delayedHintAction(hintsPanel.swap, grid::swapTilesHint, on)
         }
 
         hintsPanel.setOnRemoveClickListener { on ->

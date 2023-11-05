@@ -211,8 +211,8 @@ class GridActivity : AppCompatActivity() {
         levelPanel.appendToJson(json)
         hintsPanel.appendToJson(json)
         idlePanel.appendToJson(json)
-        timeView.appendToJson(json)
         speedView.appendToJson(json)
+        timeView.appendToJson(json)
 
         json.put("gridLevel", Data.gridLevel)
 
@@ -222,8 +222,8 @@ class GridActivity : AppCompatActivity() {
 
     private fun reloadState(json: JSONObject) {
         Data.gridLevel = json.getInt("gridLevel")
-        speedView.fromJson(json)
         timeView.fromJson(json)
+        speedView.fromJson(json)
         idlePanel.fromJson(json)
         levelPanel.fromJson(json)
         hintsPanel.fromJson(json)

@@ -25,9 +25,17 @@ class IdlePanelView(
 ) : FrameLayout(context, attr), TimeControlled {
 
     private var onGoing = false
-    private var thread: IdleTick? = null
+    private var idleTickThread: IdleTickThread? = null
+    private var recoverTimeThread: RecoverTimeThread? = null
 
     var maxTime = 0
+        set(value) {
+            field = value
+            if (recoverTimeThread == null && currentTime > 0 && currentTime < value) {
+                recoverTimeThread = RecoverTimeThread(false).apply { start() }
+            }
+        }
+
     private var currentTime = 0
         set(value) {
             field = if (value > maxTime) maxTime else value
@@ -71,27 +79,34 @@ class IdlePanelView(
         timePassed: Long
     ): Boolean {
         val secs = (timePassed / 1000).toInt().coerceAtMost(currentTime)
-        currentTime -= secs + SPEED_TIME_REGENERATE
+        currentTime -= secs
         onProduceByteListener?.accept(secs, bytesSec * secs.sByte, true)
         return true
     }
 
     fun stopTimer() {
-        thread?.apply {
+        idleTickThread?.apply {
             interrupt()
             onGoing = false
-            thread = null
+            idleTickThread = null
+        }
+        recoverTimeThread?.apply {
+            interrupt()
+            recoverTimeThread = null
         }
     }
 
     fun startTimer() {
         onGoing = true
-        if (thread == null) {
-            thread = IdleTick().apply { start() }
+        if (idleTickThread == null) {
+            idleTickThread = IdleTickThread().apply { start() }
+        }
+        if (recoverTimeThread == null && currentTime < maxTime) {
+            recoverTimeThread = RecoverTimeThread().apply { start() }
         }
     }
 
-    inner class IdleTick: Thread() {
+    inner class IdleTickThread: Thread() {
         override fun run() {
             val time = 1000L
 
@@ -100,6 +115,33 @@ class IdlePanelView(
                     val initTime = System.nanoTime()
                     runOnUiThread {
                         onProduceByteListener?.accept(1, bytesSec, false)
+                    }
+                    val endTime = System.nanoTime()
+
+                    val sleepTime = (time - (endTime - initTime) / 1000000)
+                    if (sleepTime > 0) {
+                        sleep(sleepTime)
+                    }
+                }
+            } catch (_: InterruptedException) {
+            }
+            idleTickThread = null
+        }
+    }
+
+    inner class RecoverTimeThread(
+        private val initDelay: Boolean = true
+    ): Thread() {
+        override fun run() {
+            val time = 150L
+
+            try {
+                if (initDelay) {
+                    sleep(1000L)
+                }
+                while (currentTime < maxTime) {
+                    val initTime = System.nanoTime()
+                    runOnUiThread {
                         currentTime += SPEED_TIME_REGENERATE
                     }
                     val endTime = System.nanoTime()
@@ -111,6 +153,7 @@ class IdlePanelView(
                 }
             } catch (_: InterruptedException) {
             }
+            recoverTimeThread = null
         }
     }
 

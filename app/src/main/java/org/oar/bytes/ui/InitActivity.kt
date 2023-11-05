@@ -32,13 +32,9 @@ class InitActivity : AppCompatActivity() {
                 if (it.has("disable")) return@mapJsonObject null
                 Device(
                     it.getInt("id"),
-                    it.getLong("speed").sByte,
+                    it.getString("speed").sByte,
                     it.getString("name"),
-                    it.getString("sub-device"),
-                    it.getInt("unlock-fee"),
-                    it.getLong("upgrade").sByte,
-                    it.getInt("upgrade-sub-device"),
-                    it.getInt("percent-upgrade"),
+                    it.getString("upgrade").sByte,
                 )
             }
             .filterNotNull()

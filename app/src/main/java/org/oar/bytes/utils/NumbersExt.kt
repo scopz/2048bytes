@@ -2,6 +2,7 @@ package org.oar.bytes.utils
 
 import android.content.Context
 import org.oar.bytes.model.SByte
+import org.oar.bytes.utils.Constants.SCALE_LETTER
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -23,7 +24,19 @@ object NumbersExt {
         get() = this.toBigInteger().sByte
 
     val String.sByte: SByte
-        get() = this.toBigInteger().sByte
+        get() {
+            if (this.matches(Regex("^\\d+[A-Z]$"))) {
+                val letter = this.substring(this.lastIndex)
+                val value = this.substring(0, this.lastIndex)
+                val scale = SCALE_LETTER.indexOf(letter)
+                if (scale > 0) {
+                    val nextScale = 1024.sByte
+                    return (0 until scale)
+                        .fold(value.sByte) { acc, _ -> acc.times(nextScale) }
+                }
+            }
+            return this.toBigInteger().sByte
+        }
 
     fun BigDecimal.canReduceScale() = this >= THOUSAND_BYTES_BD
     fun BigDecimal.reduceScale(): BigDecimal {

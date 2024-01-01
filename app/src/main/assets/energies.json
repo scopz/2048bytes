@@ -31,7 +31,7 @@
   },
   {
     "id": 4,
-    "capacity": 300,
+    "capacity": 360,
     "name": "Wind Power",
     "sub-device": "Air Blast",
     "unlock-fee": 10,

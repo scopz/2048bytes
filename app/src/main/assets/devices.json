@@ -13,110 +13,110 @@
   },
   {
     "id": 3,
-    "speed": "300",
+    "speed": "200",
     "name": "Arithmometer",
     "upgrade": "1M"
   },
   {
     "id": 4,
-    "speed": "4K",
+    "speed": "3K",
     "name": "Automator",
     "upgrade": "25M"
   },
   {
     "id": 5,
-    "speed": "50K",
+    "speed": "40K",
     "name": "Vacuum Tube",
     "upgrade": "600M"
   },
   {
     "id": 6,
-    "speed": "600K",
+    "speed": "500K",
     "name": "Baretter",
     "upgrade": "10G"
   },
   {
     "id": 7,
-    "speed": "7M",
+    "speed": "4M",
     "name": "Transistor",
     "upgrade": "200G"
   },
   {
     "id": 8,
-    "speed": "80M",
+    "speed": "70M",
     "name": "System Board",
     "upgrade": "900G"
   },
   {
     "id": 9,
-    "speed": "900M",
+    "speed": "800M",
     "name": "Chip",
     "upgrade": "30T"
   },
   {
     "id": 10,
-    "speed": "10G",
+    "speed": "9G",
     "name": "Silicon Base",
     "upgrade": "700T"
   },
   {
     "id": 11,
-    "speed": "110G",
+    "speed": "100G",
     "name": "Microchip",
     "upgrade": "25P"
   },
 
   {
     "id": 12,
-    "speed": "1229G",
+    "speed": "1126G",
     "name": "Comparator",
     "upgrade": "500P"
   },
   {
     "id": 13,
-    "speed": "13T",
+    "speed": "12T",
     "name": "CPU",
     "upgrade": "4E"
   },
   {
     "id": 14,
-    "speed": "140T",
+    "speed": "130T",
     "name": "FAN",
     "upgrade": "90E"
   },
   {
     "id": 15,
-    "speed": "1536T",
+    "speed": "1434T",
     "name": "GPU",
     "upgrade": "800E"
   },
   {
     "id": 16,
-    "speed": "16P",
+    "speed": "15P",
     "name": "RAM",
     "upgrade": "50Z"
   },
   {
     "id": 17,
-    "speed": "170P",
+    "speed": "160P",
     "name": "APU",
     "upgrade": "1Y"
   },
   {
     "id": 18,
-    "speed": "1844P",
+    "speed": "1741P",
     "name": "Northbridge",
     "upgrade": "25Y"
   },
   {
     "id": 19,
-    "speed": "19E",
+    "speed": "18E",
     "name": "Server",
     "upgrade": "500Y"
   },
   {
     "id": 20,
-    "speed": "200E",
+    "speed": "190E",
     "name": "GRID",
     "upgrade": "1R"
   },

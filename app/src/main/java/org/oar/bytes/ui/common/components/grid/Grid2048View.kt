@@ -390,6 +390,6 @@ class Grid2048View(
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
-        tiles.toList().forEach { it.draw(canvas) }
+        tiles.toList().forEach { it?.draw(canvas) }
     }
 }

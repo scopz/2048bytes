@@ -62,7 +62,7 @@ class GridActivity : AppCompatActivity() {
         pager.isUserInputEnabled = false
         pager.setCurrentItem(1, false)
 
-        adapter.gridFragment.viewInstance.apply {
+        adapter.gridFragment.viewInstance?.apply {
             grid = findViewById(R.id.grid)
             hintsPanel = findViewById(R.id.hintsPanel)
 
@@ -79,13 +79,13 @@ class GridActivity : AppCompatActivity() {
 
         }
 
-        adapter.energyFragment.viewInstance.apply {
+        adapter.energyFragment.viewInstance?.apply {
             timeView = findViewById(R.id.energyDeviceList)
             timeView.setOnEnergyChangedListener {
                 idlePanel.maxTime = it
             }
         }
-        adapter.deviceFragment.viewInstance.apply {
+        adapter.deviceFragment.viewInstance?.apply {
             speedView = findViewById(R.id.deviceList)
             speedView.setOnSpeedChangedListener {
                 idlePanel.bytesSec = it
@@ -254,9 +254,14 @@ class GridActivity : AppCompatActivity() {
         }
     }
 
-    class Id2Fragment<T : View>(@LayoutRes id: Int, inflater: LayoutInflater): Fragment() {
+    class Id2Fragment<T : View>(
+        @LayoutRes id: Int,
+        inflater: LayoutInflater?
+    ): Fragment() {
+        constructor() : this(0, null)
+
         @Suppress("UNCHECKED_CAST")
-        val viewInstance: T = inflater.inflate(id, null) as T
+        val viewInstance = if (id == 0) null else inflater?.inflate(id, null) as T?
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = viewInstance
     }

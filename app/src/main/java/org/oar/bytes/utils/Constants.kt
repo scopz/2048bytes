@@ -22,18 +22,19 @@ object Constants {
     val LEVEL_EXP = GeneratorMap(
         0 to 100.sByte,
         1 to 300.sByte,
-        2 to 3000.sByte,
-        3 to 15000.sByte,
-        4 to 40000.sByte,
-        5 to 100000.sByte,
-        6 to 240000.sByte,
-        7 to 600000.sByte,
     ) {
-        BigDecimal("3906.25")
-            .multiply(BigDecimal("2.1").pow(it))
+
+        fun generateNumbers(start: String, factor: String, power: Int) = BigDecimal(start)
+            .multiply(BigDecimal(factor).pow(power))
             .toBigInteger()
             .sByte
-            .also { a -> println(a.value) }
+
+        when(it) {
+            in 0 until 5 -> generateNumbers("100", "3", it)
+            in 5 until 20 -> generateNumbers("24300", "2.1", it - 5)
+            in 20 until 30 -> generateNumbers("1655372341", "2.05", it - 20)
+            else -> generateNumbers("2169872947000", "2.01", it - 30)
+        }
     }
 
     class GeneratorMap<T>(

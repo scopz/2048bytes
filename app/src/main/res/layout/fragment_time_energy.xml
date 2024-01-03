@@ -10,6 +10,6 @@
         android:id="@+id/energyDeviceList"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:listitem="@layout/component_device" />
+        tools:listitem="@layout/component_energy_device" />
 
 </LinearLayout>

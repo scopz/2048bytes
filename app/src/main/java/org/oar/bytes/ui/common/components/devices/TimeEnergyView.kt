@@ -9,7 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import org.json.JSONObject
 import org.oar.bytes.R
-import org.oar.bytes.databinding.ComponentDeviceBinding
+import org.oar.bytes.databinding.ComponentEnergyDeviceBinding
 import org.oar.bytes.model.EnergyDevice
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.JsonExt.getJSONArrayOrNull
@@ -24,8 +24,12 @@ class TimeEnergyView(
     attr: AttributeSet? = null
 ) : RecyclerView(context, attr) {
 
+    companion object {
+        private const val MAX_LEVEL = 30
+    }
+
     val levels = mutableMapOf<Int, Int>()
-    val percentLevels = mutableMapOf<Int, Int>()
+    private val percentLevels = mutableMapOf<Int, Int>()
 
     private var onEnergyChangedListener: Consumer<Int>? = null
     fun setOnEnergyChangedListener(listener: Consumer<Int>) { onEnergyChangedListener = listener }
@@ -50,7 +54,7 @@ class TimeEnergyView(
         override fun getItemCount() = Data.energyDevices.size
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CustomViewHolder {
             return CustomViewHolder(
-                ComponentDeviceBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                ComponentEnergyDeviceBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             )
         }
 
@@ -61,21 +65,38 @@ class TimeEnergyView(
             val time = device.capacity * level
             holder.current.text = time.toHHMMSS()
 
-            if (level < 30) {
+            if (level < MAX_LEVEL) {
 //                if (level == 0) {
 //                    holder.price.text = "${device.unlockFee} COINS"
 //                } else {
                     holder.price.text = "${device.cost(level)}"
+                    disableButton(holder, false)
 //                }
             } else {
                 holder.price.text = "MAX"
+                disableButton(holder)
+            }
+        }
+
+        private fun disableButton(holder: CustomViewHolder, disable: Boolean = true) {
+            if (disable) {
+                if (holder.button.isEnabled) {
+                    holder.itemView.alpha = 0.6f
+                    holder.itemView.setBackgroundResource(R.color.disabledPanelColor)
+                    holder.button.setBackgroundResource(R.color.disabledPanelButtonColor)
+                    holder.button.isEnabled = false
+                }
+            } else if(!holder.button.isEnabled) {
+                holder.itemView.alpha = 1f
+                holder.itemView.setBackgroundResource(R.color.timePanelColor)
+                holder.button.setBackgroundResource(R.color.timePanelButtonColor)
+                holder.button.isEnabled = true
             }
         }
 
         @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
             val device = Data.energyDevices[position]
-            holder.itemView.setBackgroundResource(R.color.timePanelColor)
 
             holder.name.text = device.name
             holder.valueToAdd.text = "+${device.capacity.toMins()}m"
@@ -84,7 +105,7 @@ class TimeEnergyView(
 
             holder.button.setOnClickListener {
                 val level = levels[device.id] ?: 0
-                if (level < 30) {
+                if (level < MAX_LEVEL) {
                     val cost = device.cost(level)
                     if (Data.consumeBytes(cost)) {
                         levels[device.id] = level + 1
@@ -96,7 +117,7 @@ class TimeEnergyView(
         }
     }
 
-    internal inner class CustomViewHolder(binding: ComponentDeviceBinding): ViewHolder(binding.root) {
+    internal inner class CustomViewHolder(binding: ComponentEnergyDeviceBinding): ViewHolder(binding.root) {
         val name = binding.name
         val current = binding.current
         val level = binding.level

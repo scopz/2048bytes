@@ -31,8 +31,12 @@
     <color name="bump06">#AAA</color>
     <color name="bump07">#999</color>
 
+    <color name="disabledPanelColor">#DDD</color>
+    <color name="disabledPanelButtonColor">#18000000</color>
     <color name="timePanelColor">#FFAD6E</color>
+    <color name="timePanelButtonColor">#2F00</color>
     <color name="speedPanelColor">#FFC571</color>
+    <color name="speedPanelButtonColor">#22FF3C00</color>
 
     <color name="capacityColor">#9CE0FF</color>
     <color name="levelColor">#FFCAB2</color>

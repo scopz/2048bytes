@@ -24,8 +24,12 @@ class SpeedDeviceView(
     attr: AttributeSet? = null
 ) : RecyclerView(context, attr) {
 
+    companion object {
+        private const val MAX_LEVEL = 30
+    }
+
     val levels = mutableMapOf<Int, Int>()
-    val percentLevels = mutableMapOf<Int, Int>()
+    private val percentLevels = mutableMapOf<Int, Int>()
 
     private var onSpeedChangedListener: Consumer<SByte>? = null
     fun setOnSpeedChangedListener(listener: Consumer<SByte>) { onSpeedChangedListener = listener }
@@ -62,21 +66,38 @@ class SpeedDeviceView(
             val speed = device.speed * levelByte
             holder.current.text = "$speed/s"
 
-            if (level < 30) {
+            if (level < MAX_LEVEL) {
 //                if (level == 0) {
 //                    holder.price.text = "${device.unlockFee} COINS"
 //                } else {
                     holder.price.text = "${device.cost(level)}"
+                    disableButton(holder, false)
 //                }
             } else {
                 holder.price.text = "MAX"
+                disableButton(holder)
+            }
+        }
+
+        private fun disableButton(holder: CustomViewHolder, disable: Boolean = true) {
+            if (disable) {
+                if (holder.button.isEnabled) {
+                    holder.itemView.alpha = 0.6f
+                    holder.itemView.setBackgroundResource(R.color.disabledPanelColor)
+                    holder.button.setBackgroundResource(R.color.disabledPanelButtonColor)
+                    holder.button.isEnabled = false
+                }
+            } else if(!holder.button.isEnabled) {
+                holder.itemView.alpha = 1f
+                holder.itemView.setBackgroundResource(R.color.speedPanelColor)
+                holder.button.setBackgroundResource(R.color.speedPanelButtonColor)
+                holder.button.isEnabled = true
             }
         }
 
         @SuppressLint("SetTextI18n")
         override fun onBindViewHolder(holder: CustomViewHolder, position: Int) {
             val device = Data.devices[position]
-            holder.itemView.setBackgroundResource(R.color.speedPanelColor)
 
             holder.name.text = device.name
             holder.valueToAdd.text = "+${device.speed}"
@@ -85,7 +106,7 @@ class SpeedDeviceView(
 
             holder.button.setOnClickListener {
                 val level = levels[device.id] ?: 0
-                if (level < 30) {
+                if (level < MAX_LEVEL) {
                     val cost = device.cost(level)
                     if (Data.consumeBytes(cost)) {
                         levels[device.id] = level + 1

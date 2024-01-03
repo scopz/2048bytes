@@ -30,10 +30,10 @@ object Constants {
             .sByte
 
         when(it) {
-            in 0 until 5 -> generateNumbers("100", "3", it)
-            in 5 until 20 -> generateNumbers("24300", "2.1", it - 5)
-            in 20 until 30 -> generateNumbers("1655372341", "2.05", it - 20)
-            else -> generateNumbers("2169872947000", "2.01", it - 30)
+            in 0 until 6 -> generateNumbers("100", "3", it)
+            in 6 until 25 -> generateNumbers("72900", "2.1", it - 6)
+            in 25 until 40 -> generateNumbers("96581540508", "2.05", it - 25)
+            else -> generateNumbers("4583550748000000", "2.01", it - 40)
         }
     }
 

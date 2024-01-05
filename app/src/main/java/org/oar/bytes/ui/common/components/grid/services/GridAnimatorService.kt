@@ -9,7 +9,11 @@ import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
+import org.oar.bytes.utils.ListExt.active
+import org.oar.bytes.utils.ListExt.asyncAdd
+import org.oar.bytes.utils.ListExt.asyncRemove
 import org.oar.bytes.utils.ListExt.findByPosition
+import org.oar.bytes.utils.ListExt.syncRemove
 
 class GridAnimatorService(
     val parent: View
@@ -22,7 +26,9 @@ class GridAnimatorService(
         spawnPos: Position? = null
     ): List<AnimationChain> {
 
-        return steps
+        val activeTiles = tiles.active
+
+        return  steps
             .sortedWith { a, b ->
                 if (a is StepMerge)
                     if (b is StepMerge) 0 else -1
@@ -32,15 +38,15 @@ class GridAnimatorService(
             .mapNotNull { step ->
                 when (step) {
                     is StepMove -> {
-                        val tile = tiles.findByPosition(step.positionDest) ?: return@mapNotNull null
+                        val tile = activeTiles.findByPosition(step.positionDest) ?: return@mapNotNull null
                         listOf(addMoveAnimation(tile, step.positionTile))
                     }
                     is StepMerge -> {
-                        val tile = tiles.findByPosition(step.positionDest) ?: return@mapNotNull null
+                        val tile = activeTiles.findByPosition(step.positionDest) ?: return@mapNotNull null
                         tile.reduceTileLevel()
 
                         val cloned = tile.clone()
-                        tiles.add(cloned)
+                        tiles.asyncAdd(cloned)
 
                         listOf(
                             addBumpAnimation(tile),
@@ -55,11 +61,11 @@ class GridAnimatorService(
             .toMutableList()
             .let { list ->
                 if (spawnPos != null) {
-                    val tile = tiles.findByPosition(spawnPos)!!
+                    val tile = activeTiles.findByPosition(spawnPos)!!
                     AnimationChain(tile)
                         .start { tile.zombie = true }
                         .next { BumpTileAnimation(tile) }
-                        .end { tiles.remove(tile) }
+                        .end { tiles.asyncRemove(tile) }
                         .also { list.add(it) }
                 }
                 AnimationChain.reduce(list)
@@ -95,7 +101,7 @@ class GridAnimatorService(
             .start { tileDest.zombie = true }
             .next { MoveTileAnimation(tileBase, posDest, speed) }
             .next {
-                tiles.remove(tileDest)
+                tiles.asyncRemove(tileDest)
                 tileBase.pos = tileDest.pos
                 tileBase.advanceTileLevel()
                 it["mergedValue"] = tileBase.value

@@ -8,7 +8,9 @@ import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
-import org.oar.bytes.utils.ListExt.findByPosition
+import org.oar.bytes.utils.ListExt.findActiveByPosition
+import org.oar.bytes.utils.ListExt.syncAssociateWith
+import org.oar.bytes.utils.ListExt.syncMap
 
 class GridStepsGeneratorService(
     val parent: View
@@ -76,7 +78,7 @@ class GridStepsGeneratorService(
         val stepsWrapper = MoveStepsWrapper()
 
         val modifyingTiles = createWorkableList(tiles)
-        val animations = tiles.associateWith { AnimationChain(it) }
+        val animations = tiles.syncAssociateWith { AnimationChain(it) }
 
         fun move(tile: MergeableGridTile, pos: Position) {
             val step = StepMove(tile.pos, pos)
@@ -99,9 +101,9 @@ class GridStepsGeneratorService(
 
         rowsProgression.forEach { row ->
             columnsProgression.forEach { column ->
-                modifyingTiles.findByPosition(Position(column, row))?.also { tile ->
+                modifyingTiles.findActiveByPosition(Position(column, row))?.also { tile ->
                     watchPositions(tile.pos)
-                        .map { modifyingTiles.findByPosition(it) }
+                        .map { modifyingTiles.findActiveByPosition(it) }
                         .firstOrNull { it != null }
                         ?.also {
                             if (it.value == tile.value && !it.merged) {
@@ -125,18 +127,18 @@ class GridStepsGeneratorService(
         }
     }
 
-    private fun createWorkableList(tiles: List<GridTile>) = tiles.toList()
-        .map { MergeableGridTile(it, it.value.clone(), it.pos) }
+    private fun createWorkableList(tiles: List<GridTile>) = tiles
+        .syncMap { MergeableGridTile(it, it.value.clone(), it.pos) }
         .toMutableList()
 
     private fun internalMoveTile(tiles: List<MergeableGridTile>, step: StepMove) {
-        val tile = tiles.findByPosition(step.positionTile)
+        val tile = tiles.findActiveByPosition(step.positionTile)
         tile?.pos = step.positionDest
     }
 
     private fun internalMergeTile(tiles: MutableList<MergeableGridTile>, step: StepMerge) {
-        val tileBase = tiles.findByPosition(step.positionBase)
-        val tileDest = tiles.findByPosition(step.positionDest)
+        val tileBase = tiles.findActiveByPosition(step.positionBase)
+        val tileDest = tiles.findActiveByPosition(step.positionDest)
 
         tiles.removeIf { it == tileBase }
         tiles.forEach {

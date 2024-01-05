@@ -28,7 +28,14 @@ import org.oar.bytes.utils.JsonExt.map
 import org.oar.bytes.utils.JsonExt.mapJsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.ListExt.active
+import org.oar.bytes.utils.ListExt.findActiveByPosition
 import org.oar.bytes.utils.ListExt.findByPosition
+import org.oar.bytes.utils.ListExt.syncAdd
+import org.oar.bytes.utils.ListExt.syncAddAll
+import org.oar.bytes.utils.ListExt.syncClear
+import org.oar.bytes.utils.ListExt.syncForEach
+import org.oar.bytes.utils.ListExt.syncRemove
+import org.oar.bytes.utils.ListExt.syncReplaceAll
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
@@ -91,7 +98,7 @@ class Grid2048View(
     @SuppressLint("DrawAllocation")
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-        tiles.replaceAll {
+        tiles.syncReplaceAll {
             GridTile(this, it.value, it.pos, it.level, tileSize)
         }
     }
@@ -99,7 +106,7 @@ class Grid2048View(
     fun restart() {
         lastSpawn.clear()
         lastSteps.clear()
-        tiles.clear()
+        tiles.syncClear()
         repeat(4) { generateRandom() }
         postInvalidate()
     }
@@ -141,7 +148,7 @@ class Grid2048View(
     fun fromJson(json: JSONObject) {
         val baseByte = baseByteValue
 
-        tiles.clear()
+        tiles.syncClear()
         json.getJSONArray("tiles")
             .mapJsonObject { tileObj ->
                 val tileLevel = tileObj.getInt("level")
@@ -150,7 +157,7 @@ class Grid2048View(
 
                 GridTile(this, value, pos, tileLevel, tileSize)
             }
-            .also { tiles.addAll(it) }
+            .also { tiles.syncAddAll(it) }
 
         this.lastSteps.clear()
         if (json.has("lastSteps")) {
@@ -175,20 +182,21 @@ class Grid2048View(
             if (tiles.size < 16) {
                 return false
             }
+            val activeTiles = tiles.active
             (0 until 4).forEach { xy ->
-                val first = tiles.findByPosition(Position(0, xy)) ?: return false
-                val left = tiles.findByPosition(first.pos.right!!) ?: return false
+                val first = activeTiles.findByPosition(Position(0, xy)) ?: return false
+                val left = activeTiles.findByPosition(first.pos.right!!) ?: return false
                 if (first.value == left.value) return false
-                val right = tiles.findByPosition(left.pos.right!!) ?: return false
+                val right = activeTiles.findByPosition(left.pos.right!!) ?: return false
                 if (left.value == right.value) return false
-                val last = tiles.findByPosition(right.pos.right!!) ?: return false
+                val last = activeTiles.findByPosition(right.pos.right!!) ?: return false
                 if (right.value == last.value) return false
-                val firstY = tiles.findByPosition(Position(xy, 0)) ?: return false
-                val leftY = tiles.findByPosition(firstY.pos.bottom!!) ?: return false
+                val firstY = activeTiles.findByPosition(Position(xy, 0)) ?: return false
+                val leftY = activeTiles.findByPosition(firstY.pos.bottom!!) ?: return false
                 if (firstY.value == leftY.value) return false
-                val rightY = tiles.findByPosition(leftY.pos.bottom!!) ?: return false
+                val rightY = activeTiles.findByPosition(leftY.pos.bottom!!) ?: return false
                 if (leftY.value == rightY.value) return false
-                val lastY = tiles.findByPosition(rightY.pos.bottom!!) ?: return false
+                val lastY = activeTiles.findByPosition(rightY.pos.bottom!!) ?: return false
                 if (rightY.value == lastY.value) return false
             }
             return true
@@ -197,12 +205,13 @@ class Grid2048View(
     private fun generateRandom(): GridTile {
         val rnd = Random()
         var position: Position
+        val activeTiles = tiles.active
         do {
             position = Position(
                 rnd.nextInt(4),
                 rnd.nextInt(4)
             )
-            val tile = tiles.findByPosition(position)
+            val tile = activeTiles.findByPosition(position)
         } while(tile != null)
 
         val tile = if (rnd.nextInt(10) < 1)
@@ -210,7 +219,7 @@ class Grid2048View(
         else
             GridTile(this, baseByteValue.clone(), position, 1, tileSize)
 
-        tiles.add(tile)
+        tiles.syncAdd(tile)
         return tile
     }
 
@@ -225,9 +234,9 @@ class Grid2048View(
         val liveData = MutableLiveData<GridTile>()
 
         selectTile = Consumer {
-            tiles.findByPosition(it) ?: run {
+            tiles.findActiveByPosition(it) ?: run {
                 val tile = GridTile(this, baseByteValue.clone(), it, 1, tileSize)
-                tiles.add(tile)
+                tiles.syncAdd(tile)
 
                 AnimationChain(tile)
                     .next { BumpTileAnimation(tile) }
@@ -261,10 +270,10 @@ class Grid2048View(
         val liveData = MutableLiveData<GridTile>()
 
         selectTile = Consumer { posA ->
-            val tileA = tiles.findByPosition(posA) ?: return@Consumer
+            val tileA = tiles.findActiveByPosition(posA) ?: return@Consumer
 
             selectTile = Consumer { posB ->
-                val tileB = tiles.findByPosition(posB)
+                val tileB = tiles.findActiveByPosition(posB)
 
                 if (tileB != null && posA.touches(posB)) {
                     listOf(
@@ -289,11 +298,11 @@ class Grid2048View(
         val liveData = MutableLiveData<GridTile>()
 
         selectTile = Consumer {
-            tiles.findByPosition(it)?.also { tile ->
+            tiles.findActiveByPosition(it)?.also { tile ->
                 tile.zombie = true
                 AnimationChain(tile)
                     .next { BumpTileAnimation(tile) }
-                    .end { tiles.remove(tile) }
+                    .end { tiles.syncRemove(tile) }
                     .also(Animator::addAndStart)
 
                 liveData.value = tile
@@ -321,16 +330,18 @@ class Grid2048View(
             return super.onTouchEvent(event)
         }
 
-        selectTile?.also { consumer ->
-            val position = touchControl.getPosition(event, tileSize)
-            consumer.accept(position)
-            return false
+        if (event.actionMasked == MotionEvent.ACTION_DOWN) {
+            selectTile?.also { consumer ->
+                val position = touchControl.getPosition(event, tileSize)
+                consumer.accept(position)
+                return false
+            }
         }
 
         gestureDetector.onTouchEvent(event)
 
         if (gameOver) {
-            return super.onTouchEvent(event)
+            return true
         }
 
         fun startAnimation(wrapper: GridStepsGeneratorService.MoveStepsWrapper) {
@@ -388,8 +399,8 @@ class Grid2048View(
         return true
     }
 
-    override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
-        tiles.toList().forEach { it?.draw(canvas) }
+    override fun draw(canvas: Canvas) {
+        super.draw(canvas)
+        tiles.syncForEach { it.draw(canvas) }
     }
 }

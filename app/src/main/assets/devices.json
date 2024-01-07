@@ -57,68 +57,68 @@
     "id": 10,
     "speed": "9G",
     "name": "Silicon Base",
-    "upgrade": "5P"
+    "upgrade": "1P"
   },
   {
     "id": 11,
     "speed": "100G",
     "name": "Microchip",
-    "upgrade": "150P"
+    "upgrade": "18P"
   },
 
   {
     "id": 12,
     "speed": "1126G",
     "name": "Comparator",
-    "upgrade": "3E"
+    "upgrade": "150P"
   },
   {
     "id": 13,
     "speed": "12T",
     "name": "CPU",
-    "upgrade": "50E"
+    "upgrade": "1E"
   },
   {
     "id": 14,
     "speed": "130T",
     "name": "FAN",
-    "upgrade": "540E"
+    "upgrade": "18E"
   },
   {
     "id": 15,
     "speed": "1434T",
     "name": "GPU",
-    "upgrade": "5Z"
+    "upgrade": "320E"
   },
   {
     "id": 16,
     "speed": "15P",
     "name": "RAM",
-    "upgrade": "300Z"
+    "upgrade": "2Z"
   },
   {
     "id": 17,
     "speed": "160P",
     "name": "APU",
-    "upgrade": "6Y"
+    "upgrade": "36Z"
   },
   {
     "id": 18,
     "speed": "1741P",
     "name": "Northbridge",
-    "upgrade": "150Y"
+    "upgrade": "500Z"
   },
   {
     "id": 19,
     "speed": "18E",
     "name": "Server",
-    "upgrade": "3R"
+    "upgrade": "3Y"
   },
   {
     "id": 20,
     "speed": "190E",
     "name": "GRID",
-    "upgrade": "50R"
+    "upgrade": "50Y"
   },
   {
     "id": 21,

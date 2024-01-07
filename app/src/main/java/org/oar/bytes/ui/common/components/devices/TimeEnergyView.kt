@@ -25,7 +25,7 @@ class TimeEnergyView(
 ) : RecyclerView(context, attr) {
 
     companion object {
-        private const val MAX_LEVEL = 30
+        private const val MAX_LEVEL = 20
     }
 
     val levels = mutableMapOf<Int, Int>()
@@ -153,7 +153,7 @@ class TimeEnergyView(
     fun fromJson(json: JSONObject) {
         levels.clear()
         json.getJSONArrayOrNull("energyLevel")?.mapJsonObject {
-            levels.put(it.getInt("id"), it.getInt("level"))
+            levels.put(it.getInt("id"), it.getInt("level").coerceAtMost(MAX_LEVEL))
         }
 
         percentLevels.clear()

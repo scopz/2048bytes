@@ -50,7 +50,7 @@ class InitActivity : AppCompatActivity() {
                     it.getString("name"),
                     it.getString("sub-device"),
                     it.getInt("unlock-fee"),
-                    it.getLong("upgrade").sByte,
+                    it.getString("upgrade").sByte,
                     it.getInt("upgrade-sub-device"),
                     it.getInt("percent-upgrade"),
                 )

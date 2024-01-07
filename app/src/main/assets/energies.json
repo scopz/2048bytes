@@ -51,7 +51,7 @@
   },
   {
     "id": 6,
-    "capacity": 430,
+    "capacity": 420,
     "name": "Extra Panel",
     "sub-device": "",
     "unlock-fee": 10,
@@ -61,11 +61,11 @@
   },
   {
     "id": 7,
-    "capacity": 490,
+    "capacity": 480,
     "name": "Wind Power",
     "sub-device": "Air Blast",
     "unlock-fee": 5,
-    "upgrade": "2P",
+    "upgrade": "10T",
     "upgrade-sub-device": 3,
     "percent-upgrade": 10
   },
@@ -75,7 +75,7 @@
     "name": "Hydroelectricity",
     "sub-device": "Dam",
     "unlock-fee": 20,
-    "upgrade": "100P",
+    "upgrade": "1P",
     "upgrade-sub-device": 10,
     "percent-upgrade": 10
   },
@@ -85,7 +85,7 @@
     "name": "Nuclear Reactor",
     "sub-device": "Power Grid",
     "unlock-fee": 30,
-    "upgrade": "1536P",
+    "upgrade": "25P",
     "upgrade-sub-device": 20,
     "percent-upgrade": 10
   }

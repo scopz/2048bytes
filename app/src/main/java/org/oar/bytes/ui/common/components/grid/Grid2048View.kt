@@ -6,7 +6,6 @@ import android.graphics.Canvas
 import android.util.AttributeSet
 import android.view.GestureDetector
 import android.view.MotionEvent
-import android.view.View
 import androidx.lifecycle.MutableLiveData
 import org.json.JSONObject
 import org.oar.bytes.R
@@ -15,6 +14,7 @@ import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.BumpTileAnimation
+import org.oar.bytes.ui.common.LimitedDrawView
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMove
 import org.oar.bytes.ui.common.components.grid.services.GridAnimatorService
@@ -46,7 +46,7 @@ import java.util.function.Consumer
 class Grid2048View(
     context: Context,
     attr: AttributeSet? = null
-) : View(context, attr) {
+) : LimitedDrawView(context, attr) {
 
     private val baseByteValue
         get() = 1.sByte.double(Data.gridLevel-1)
@@ -399,8 +399,7 @@ class Grid2048View(
         return true
     }
 
-    override fun draw(canvas: Canvas) {
-        super.draw(canvas)
+    override fun onDraw(canvas: Canvas) {
         tiles.syncForEach { it.draw(canvas) }
     }
 }

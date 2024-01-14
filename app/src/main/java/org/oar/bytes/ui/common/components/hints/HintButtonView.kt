@@ -6,10 +6,10 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
 import org.oar.bytes.R
+import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.toDynamicHHMMSS
@@ -17,7 +17,7 @@ import org.oar.bytes.utils.NumbersExt.toDynamicHHMMSS
 class HintButtonView(
     context: Context,
     attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+) : LimitedDrawFrameLayout(context, attr) {
 
     private var setOnReadyListener: Runnable? = null
     fun setOnReadyListener(listener: Runnable) { setOnReadyListener = listener }
@@ -102,7 +102,6 @@ class HintButtonView(
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawRect(progressRect, progressPaint)
-        super.onDraw(canvas)
     }
 
     private fun updateButtonBar() {

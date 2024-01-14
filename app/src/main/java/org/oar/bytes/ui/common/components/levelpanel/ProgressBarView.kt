@@ -7,16 +7,16 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.widget.FrameLayout
 import android.widget.TextView
 import org.oar.bytes.R
 import org.oar.bytes.model.SByte
+import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.NumbersExt.color
 
 class ProgressBarView(
     context: Context,
     attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+) : LimitedDrawFrameLayout(context, attr) {
 
     private var capacityProgress = 0f
         set(value) {
@@ -72,7 +72,6 @@ class ProgressBarView(
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
-        super.onDraw(canvas)
         canvas.drawRect(capacityRect, capacityBar)
         canvas.drawRect(levelRect, levelBar)
     }

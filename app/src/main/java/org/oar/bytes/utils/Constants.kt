@@ -22,24 +22,26 @@ object Constants {
     val LEVEL_EXP = GeneratorMap(
         0 to 100.sByte,
         1 to 300.sByte,
-    ) {
+    ) { level, prevExp ->
 
-        fun generateNumbers(start: String, factor: String, power: Int) = BigDecimal(start)
-            .multiply(BigDecimal(factor).pow(power))
-            .toBigInteger()
-            .sByte
-
-        when(it) {
-            in 0 until 6 -> generateNumbers("100", "3", it)
-            in 6 until 25 -> generateNumbers("72900", "2.1", it - 6)
-            in 25 until 40 -> generateNumbers("96581540508", "2.05", it - 25)
-            else -> generateNumbers("4583550748000000", "2.01", it - 40)
+        val factor = when {
+            level <= 6 -> "3"
+            level <= 7 -> "2.5"
+            level <= 25 -> "2.10"
+            level <= 45 -> "2.05"
+            level <= 60 -> "2.01"
+            level <= 70 -> "2.05"
+            else -> "2.10"
         }
+
+        prevExp.value.toBigDecimal()
+            .multiply(BigDecimal(factor))
+            .sByte
     }
 
     class GeneratorMap<T>(
         vararg pairs: Pair<Int, T>,
-        private val generator: (Int) -> T
+        private val generator: (Int, T) -> T
     ) : HashMap<Int, T>() {
 
         init {
@@ -48,7 +50,9 @@ object Constants {
 
         override operator fun get(key: Int): T {
             return super.get(key) ?: run {
-                generator(key).also { this[key] = it }
+                val prevValue = this[key - 1]
+                generator(key, prevValue)
+                    .also { this[key] = it }
             }
         }
     }

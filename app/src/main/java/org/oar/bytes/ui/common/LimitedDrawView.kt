@@ -13,12 +13,13 @@ open class LimitedDrawView(
     private var invalidated = false
     private var nextInvalidationPending = false
 
+    final override fun postInvalidateOnAnimation() = postInvalidate()
     final override fun postInvalidate() {
         if (invalidated) {
             nextInvalidationPending = true
         } else {
             invalidated = true
-            super.postInvalidate()
+            super.postInvalidateOnAnimation()
         }
     }
 
@@ -26,7 +27,7 @@ open class LimitedDrawView(
         super.draw(canvas)
         if (nextInvalidationPending) {
             nextInvalidationPending = false
-            super.postInvalidate()
+            super.postInvalidateOnAnimation()
         } else {
             invalidated = false
         }

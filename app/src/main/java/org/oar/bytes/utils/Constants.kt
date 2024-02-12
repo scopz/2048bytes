@@ -26,11 +26,10 @@ object Constants {
 
         val factor = when {
             level <= 6 -> "3"
-            level <= 7 -> "2.5"
-            level <= 25 -> "2.10"
-            level <= 45 -> "2.05"
-            level <= 60 -> "2.01"
-            level <= 70 -> "2.05"
+            level <= 7 -> "2.6"
+            level <= 25 -> "2.15"
+            level <= 45 -> "2.11"
+            level <= 70 -> "2.06"
             else -> "2.10"
         }
 

@@ -251,6 +251,26 @@ class Grid2048View(
         return liveData
     }
 
+    fun improveLowerHint(): Boolean {
+        if (Animator.blockedGrid)
+            return false
+
+        val updateTiles = tiles.active
+            .filter { it.level == 1 }
+
+        if (updateTiles.isEmpty())
+            return false
+
+        updateTiles
+            .map {
+                it.advancedGridLevel()
+                it.level++
+                AnimationChain(it).next { _ -> BumpTileAnimation(it) }
+            }
+            .also { Animator.addAndStart(it) }
+        return true
+    }
+
     fun revertLastHint(): Boolean {
         if (Animator.blockedGrid || lastSpawn.isEmpty() || lastSteps.isEmpty())
             return false

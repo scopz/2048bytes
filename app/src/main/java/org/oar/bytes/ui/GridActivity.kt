@@ -181,6 +181,12 @@ class GridActivity : AppCompatActivity() {
             delayedHintAction(hintsPanel.add, grid::addTileHint, on)
         }
 
+        hintsPanel.setOnImproveLowerClickListener {
+            if (grid.improveLowerHint()) {
+                hintsPanel.improveLower.setProgress(0)
+            }
+        }
+
         hintsPanel.setOnRevertClickListener {
             if (grid.revertLastHint()) {
                 hintsPanel.revert.setProgress(0)

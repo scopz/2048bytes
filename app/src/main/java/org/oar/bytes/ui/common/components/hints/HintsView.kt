@@ -18,6 +18,9 @@ class HintsView(
     private var onAddClickListener: Consumer<Boolean>? = null
     fun setOnAddClickListener(listener: Consumer<Boolean>) { onAddClickListener = listener }
 
+    private var onImproveLowerClickListener: Runnable? = null
+    fun setOnImproveLowerClickListener(listener: Runnable) { onImproveLowerClickListener = listener }
+
     private var onRevertClickListener: Runnable? = null
     fun setOnRevertClickListener(listener: Runnable) { onRevertClickListener = listener }
 
@@ -30,6 +33,7 @@ class HintsView(
     val hints: List<HintButtonView>
 
     val add: HintButtonView
+    val improveLower: HintButtonView
     val revert: HintButtonView
     val swap: HintButtonView
     val remove: HintButtonView
@@ -47,14 +51,20 @@ class HintsView(
             }
         }
 
+        improveLower = findViewById(R.id.improveLower)
+        improveLower.maxValue = 21600 // 6h
+        improveLower.setOnClickListener {
+            onImproveLowerClickListener?.run()
+        }
+
         revert = findViewById(R.id.revertLastBtn)
-        revert.maxValue = 25200 // 7h
+        revert.maxValue = 32400 // 9h
         revert.setOnClickListener {
             onRevertClickListener?.run()
         }
 
         swap = findViewById(R.id.swapBtn)
-        swap.maxValue = 43200 // 12h
+        swap.maxValue = 50400 // 14h
         swap.setOnClickListener {
             if (swap.active) {
                 onSwapClickListener?.accept(false)
@@ -64,7 +74,7 @@ class HintsView(
         }
 
         remove = findViewById(R.id.removeBtn)
-        remove.maxValue = 64800 // 18h
+        remove.maxValue = 72000 // 20h
         remove.setOnClickListener {
             if (remove.active) {
                 onRemoveClickListener?.accept(false)
@@ -73,7 +83,7 @@ class HintsView(
             }
         }
 
-        hints = listOf(add, revert, swap, remove)
+        hints = listOf(add, improveLower, revert, swap, remove)
     }
 
     private fun canActivate() = hints.none { it.active }

@@ -11,6 +11,7 @@ import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
+import org.oar.bytes.model.JoinResult
 import org.oar.bytes.model.Position
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.BumpTileAnimation
@@ -39,7 +40,6 @@ import org.oar.bytes.utils.ListExt.syncReplaceAll
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
-import org.oar.bytes.utils.TriConsumer
 import java.util.*
 import java.util.function.Consumer
 
@@ -72,8 +72,8 @@ class Grid2048View(
     private val animator = GridAnimatorService(this)
 
     // listeners
-    private var onProduceByteListener: TriConsumer<Int, Int, SByte>? = null
-    fun setOnProduceByteListener(listener: TriConsumer<Int, Int, SByte>) { onProduceByteListener = listener }
+    private var onProduceByteListener: Consumer<JoinResult>? = null
+    fun setOnProduceByteListener(listener: Consumer<JoinResult>) { onProduceByteListener = listener }
 
     private var onGameOverListener: Runnable? = null
     fun setOnGameOverListener(listener: Runnable) { onGameOverListener = listener }
@@ -362,7 +362,13 @@ class Grid2048View(
                                 .mapNotNull<AnimationChain, Int> { it["mergedLevel"] }
 
                             runOnUiThread {
-                                onProduceByteListener?.accept(mergedLevels.size, mergedLevels.sum(), mergedValue)
+                                onProduceByteListener?.accept(
+                                    JoinResult(
+                                        mergedLevels.size,
+                                        mergedValue,
+                                        mergedLevels
+                                    )
+                                )
                             }
                         }
 

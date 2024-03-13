@@ -2,7 +2,10 @@ package org.oar.bytes.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.view.Window
 import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
@@ -115,9 +118,9 @@ class GridActivity : AppCompatActivity() {
                     hintsPanel.addProgress(secs)
                 }
         }
-        grid.setOnProduceByteListener { count, _, value ->
-            levelPanel.addBytes(value)
-            hintsPanel.addProgress(count * 10)
+        grid.setOnProduceByteListener {
+            levelPanel.addBytes(it.mergedValue)
+            hintsPanel.addProgress(it.mergedLevels.sumOf { v -> v - 1 } * 12)
         }
 
         grid.setOnGameOverListener {

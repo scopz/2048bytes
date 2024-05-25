@@ -36,8 +36,8 @@ class IdlePanelView(
             }
         }
 
-    private var currentTime = 0
-        set(value) {
+    var currentTime = 0
+        private set(value) {
             field = if (value > maxTime) maxTime else value
             timeText.text = field.toHHMMSS()
         }

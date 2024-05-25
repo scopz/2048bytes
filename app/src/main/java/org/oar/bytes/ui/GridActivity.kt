@@ -16,6 +16,9 @@ import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
+import org.oar.bytes.features.notification.NotificationChannel
+import org.oar.bytes.features.notification.NotificationService.clearScheduledNotifications
+import org.oar.bytes.features.notification.NotificationService.scheduleNotification
 import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.ui.animations.HintsProgressAnimation
 import org.oar.bytes.ui.animations.LevelProgressAnimation
@@ -59,6 +62,8 @@ class GridActivity : AppCompatActivity() {
             deleteState()
             Data.gridLevel = 1
         }
+
+        clearScheduledNotifications()
 
         val adapter = SectionsPagerAdapter()
         pager.adapter = adapter
@@ -226,7 +231,29 @@ class GridActivity : AppCompatActivity() {
         json.put("gridLevel", Data.gridLevel)
 
         saveState(json)
+        scheduleNotifications()
+
         super.onPause()
+    }
+
+    private fun scheduleNotifications() {
+        scheduleNotification(NotificationChannel.IDLE_ENDED, idlePanel.currentTime)
+
+        val bytesPerSecond = idlePanel.bytesSec
+
+        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue
+        val secondsToLevel = (pendingBytesToLevel/bytesPerSecond).value.toInt()
+
+        if (secondsToLevel < idlePanel.currentTime) {
+            scheduleNotification(NotificationChannel.LEVEL_AVAILABLE, secondsToLevel)
+        }
+
+        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue
+        val secondsToCap = (pendingBytesToCap/bytesPerSecond).value.toInt()
+
+        if (secondsToCap < idlePanel.currentTime) {
+            scheduleNotification(NotificationChannel.MAX_CAPACITY_REACHED, secondsToCap)
+        }
     }
 
     private fun reloadState(json: JSONObject) {
@@ -244,6 +271,7 @@ class GridActivity : AppCompatActivity() {
         super.onResume()
         TimeController.notifyOfflineTime(this)
         idlePanel.startTimer()
+        clearScheduledNotifications()
     }
 
 

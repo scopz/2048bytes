@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
+import org.oar.bytes.features.notification.NotificationService
 import org.oar.bytes.model.Device
 import org.oar.bytes.model.EnergyDevice
 import org.oar.bytes.utils.Data
@@ -18,6 +19,7 @@ class InitActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
 
         loadAssets()
+        NotificationService.configureChannels(this)
 
         val intent = Intent(this, GridActivity::class.java)
         startActivity(intent)

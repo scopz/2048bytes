@@ -31,9 +31,9 @@ class LevelPanelView(
             progressBar.setCapacityProgress(storedValue, capacity)
         }
 
-    private var toLevel: SByte
+    var toLevel: SByte
         get() = Constants.LEVEL_EXP[Data.gridLevel - 1]
-        set(value) {
+        private set(value) {
             progressBar.setLevelProgress(storedValue, value)
         }
 

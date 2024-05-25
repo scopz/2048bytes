@@ -8,4 +8,8 @@
 
     <string name="title_confirm">Confirm</string>
     <string name="restart_confirm">Do you really want to restart?</string>
+
+    <string name="level_available_notification_text">Next level is available</string>
+    <string name="max_capacity_reached_notification_text">Max capacity reached</string>
+    <string name="idle_ended_notification_text">Idle time ended</string>
 </resources>

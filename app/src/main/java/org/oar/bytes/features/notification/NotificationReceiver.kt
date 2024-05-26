@@ -17,6 +17,7 @@ class NotificationReceiver : BroadcastReceiver() {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
+        val moment = intent.getLongExtra("moment", System.currentTimeMillis())
         val channel = intent.action
             ?.let(NotificationChannel::fromId)
             ?: return
@@ -37,6 +38,8 @@ class NotificationReceiver : BroadcastReceiver() {
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(text)
+            .setUsesChronometer(true)
+            .setWhen(moment)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

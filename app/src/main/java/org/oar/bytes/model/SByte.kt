@@ -11,7 +11,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 
 data class SByte (
-    var value: BigInteger = 0.toBigInteger()
+    var value: BigInteger = BigInteger.ZERO
 ): Cloneable {
 
     companion object {
@@ -39,6 +39,12 @@ data class SByte (
 
     val isZero: Boolean
         get() = value.compareTo(BigInteger.ZERO) == 0
+
+    val isBiggerThanZero: Boolean
+        get() = value > BigInteger.ZERO
+
+    val isNegative: Boolean
+        get() = value < BigInteger.ZERO
 
     fun add(byte: SByte) {
         value = (this + byte).value
@@ -72,7 +78,7 @@ data class SByte (
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
-        return value == (other as SByte).value
+        return value.compareTo((other as SByte).value) == 0
     }
 
     public override fun clone() = value.sByte

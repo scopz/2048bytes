@@ -237,22 +237,27 @@ class GridActivity : AppCompatActivity() {
     }
 
     private fun scheduleNotifications() {
-        scheduleNotification(NotificationChannel.IDLE_ENDED, idlePanel.currentTime)
-
-        val bytesPerSecond = idlePanel.bytesSec
-
-        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue
-        val secondsToLevel = (pendingBytesToLevel/bytesPerSecond).value.toInt()
-
-        if (secondsToLevel < idlePanel.currentTime) {
-            scheduleNotification(NotificationChannel.LEVEL_AVAILABLE, secondsToLevel)
+        if (idlePanel.currentTime > 0) {
+            scheduleNotification(NotificationChannel.IDLE_ENDED, idlePanel.currentTime)
         }
 
-        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue
-        val secondsToCap = (pendingBytesToCap/bytesPerSecond).value.toInt()
+        val bytesPerSecond = idlePanel.bytesSec
+        if (!bytesPerSecond.isBiggerThanZero) return
 
-        if (secondsToCap < idlePanel.currentTime) {
-            scheduleNotification(NotificationChannel.MAX_CAPACITY_REACHED, secondsToCap)
+        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue
+        if (pendingBytesToCap.isBiggerThanZero) {
+            val secondsToCap = (pendingBytesToCap/bytesPerSecond).value.toInt()
+            if (secondsToCap < idlePanel.currentTime) {
+                scheduleNotification(NotificationChannel.MAX_CAPACITY_REACHED, secondsToCap)
+            }
+        }
+
+        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue
+        if (pendingBytesToLevel <= pendingBytesToCap && pendingBytesToLevel.isBiggerThanZero) {
+            val secondsToLevel = (pendingBytesToLevel/bytesPerSecond).value.toInt()
+            if (secondsToLevel < idlePanel.currentTime) {
+                scheduleNotification(NotificationChannel.LEVEL_AVAILABLE, secondsToLevel)
+            }
         }
     }
 

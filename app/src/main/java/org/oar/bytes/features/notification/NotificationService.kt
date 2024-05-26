@@ -3,6 +3,7 @@ package org.oar.bytes.features.notification
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.app.Service.NOTIFICATION_SERVICE
 import android.content.Context
 import android.content.Context.ALARM_SERVICE
 import android.content.Intent
@@ -17,8 +18,11 @@ object NotificationService {
     private val pendingIntents = mutableListOf<PendingIntent>()
 
     fun Context.scheduleNotification(channel: NotificationChannel, delayInSeconds: Int) {
+        val triggerTime = System.currentTimeMillis() + delayInSeconds * 1000
+
         val intent = Intent(this, NotificationReceiver::class.java).apply {
             action = channel.id
+            putExtra("moment", triggerTime)
             flags = flags or Intent.FLAG_RECEIVER_FOREGROUND
         }
 
@@ -30,7 +34,6 @@ object NotificationService {
         ).apply(pendingIntents::add)
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        val triggerTime = System.currentTimeMillis() + delayInSeconds * 1000
 
         try {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, scheduledIntent)
@@ -41,6 +44,7 @@ object NotificationService {
 
     fun Context.clearScheduledNotifications() {
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
         NotificationChannel.values().forEach {
             val intent = Intent(this, NotificationReceiver::class.java).apply {
@@ -56,6 +60,7 @@ object NotificationService {
             )
 
             alarmManager.cancel(scheduledIntent)
+            notificationManager.cancel(it.id.length)
         }
     }
 
@@ -87,7 +92,7 @@ object NotificationService {
         android.app.NotificationChannel(
             channel.silentId,
             channel.toSilentString(context),
-            NotificationManager.IMPORTANCE_LOW
+            NotificationManager.IMPORTANCE_HIGH
         )
             .apply {
                 setSound(null, null)

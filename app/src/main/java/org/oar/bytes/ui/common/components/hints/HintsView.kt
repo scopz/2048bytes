@@ -42,7 +42,7 @@ class HintsView(
         LayoutInflater.from(context).inflate(R.layout.component_hints_bar, this, true)
 
         add = findViewById(R.id.addBtn)
-        add.maxValue = 10800 // 3h
+        add.secondsToLoad = 10800 // 3h
         add.setOnClickListener {
             if (add.active) {
                 onAddClickListener?.accept(false)
@@ -52,19 +52,19 @@ class HintsView(
         }
 
         improveLower = findViewById(R.id.improveLower)
-        improveLower.maxValue = 21600 // 6h
+        improveLower.secondsToLoad = 21600 // 6h
         improveLower.setOnClickListener {
             onImproveLowerClickListener?.run()
         }
 
         revert = findViewById(R.id.revertLastBtn)
-        revert.maxValue = 32400 // 9h
+        revert.secondsToLoad = 32400 // 9h
         revert.setOnClickListener {
             onRevertClickListener?.run()
         }
 
         swap = findViewById(R.id.swapBtn)
-        swap.maxValue = 50400 // 14h
+        swap.secondsToLoad = 50400 // 14h
         swap.setOnClickListener {
             if (swap.active) {
                 onSwapClickListener?.accept(false)
@@ -74,7 +74,7 @@ class HintsView(
         }
 
         remove = findViewById(R.id.removeBtn)
-        remove.maxValue = 72000 // 20h
+        remove.secondsToLoad = 72000 // 20h
         remove.setOnClickListener {
             if (remove.active) {
                 onRemoveClickListener?.accept(false)
@@ -88,17 +88,16 @@ class HintsView(
 
     private fun canActivate() = hints.none { it.active }
 
-    fun addProgress(value: Int) {
-        hints.forEach { it.addProgress(value) }
-    }
-
-    fun addProgress(value: Int, index: Int) {
-        hints[index].addProgress(value)
+    fun addFinalSeconds(seconds: Int) {
+        hints.forEach {
+            it.seconds.finalValue = (it.seconds.value + seconds)
+                .coerceAtMost(it.secondsToLoad)
+        }
     }
 
     fun appendToJson(json: JSONObject) {
         hints
-            .map { it.currentValue }
+            .map { it.seconds.finalValue }
             .jsonArray()
             .also { json.put("hints", it) }
     }
@@ -108,7 +107,7 @@ class HintsView(
             val length = hintsArray.length()
             hints.indices.forEach { i ->
                 if (i < length) {
-                    hints[i].setProgress(hintsArray.getInt(i))
+                    hints[i].fromJson(hintsArray.getInt(i))
                 }
             }
         }

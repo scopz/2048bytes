@@ -9,6 +9,7 @@ import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
 import org.oar.bytes.R
+import org.oar.bytes.model.AnimatedValue
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.NumbersExt.color
@@ -34,13 +35,11 @@ class HintButtonView(
             updateButtonBar()
             postInvalidate()
         }
-    var maxValue = 1
-    var currentValue = 0
-        private set(value) {
-            field = value
-            runOnUiThread {
-                timeView.text = (maxValue - value).toDynamicHHMMSS()
-            }
+
+    var secondsToLoad = 1
+    val seconds = AnimatedValue(0)
+        .apply {
+            onValueChanged = { updateUi() }
         }
 
     private val progressRect = Rect()
@@ -92,13 +91,15 @@ class HintButtonView(
         updateButtonBar()
     }
 
-    fun setProgress(current: Int, max: Int = maxValue) {
-        currentValue = current.coerceAtMost(max)
-        progress = currentValue.toFloat() / max.toFloat()
+    fun addSeconds(currentSeconds: Int, inAnimation: Boolean = false) {
+        seconds.operate(inAnimation) {
+            (currentSeconds + it).coerceAtMost(secondsToLoad)
+        }
     }
 
-    fun addProgress(current: Int, max: Int = maxValue) =
-        setProgress(current + currentValue, max)
+    private fun setSeconds(currentSeconds: Int) {
+        seconds.value = currentSeconds.coerceAtMost(secondsToLoad)
+    }
 
     override fun onDraw(canvas: Canvas) {
         canvas.drawRect(progressRect, progressPaint)
@@ -119,4 +120,20 @@ class HintButtonView(
             progressRect.top = (measuredWidth * (1f-progress)).toInt()
         }
     }
+
+    private fun updateUi() {
+        progress = seconds.value / secondsToLoad.toFloat()
+        runOnUiThread {
+            timeView.text = (secondsToLoad - seconds.value).toDynamicHHMMSS()
+        }
+    }
+
+    fun reset() {
+        setSeconds(0)
+    }
+
+    fun fromJson(seconds: Int) {
+        setSeconds(seconds)
+    }
 }
+

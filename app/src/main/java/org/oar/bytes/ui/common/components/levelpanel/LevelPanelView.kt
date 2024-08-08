@@ -8,7 +8,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import org.json.JSONObject
 import org.oar.bytes.R
+import org.oar.bytes.model.AnimatedValue
 import org.oar.bytes.model.SByte
+import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.color
@@ -28,45 +30,18 @@ class LevelPanelView(
     var capacity = 256.sByte
         private set(value) {
             field = value
-            progressBar.setCapacityProgress(storedValue, capacity)
+            progressBar.setCapacityProgress(storedValue.value, capacity)
         }
 
     var toLevel: SByte
         get() = Constants.LEVEL_EXP[Data.gridLevel - 1]
         private set(value) {
-            progressBar.setLevelProgress(storedValue, value)
+            progressBar.setLevelProgress(storedValue.value, value)
         }
 
-    var storedValue = 0.sByte
-        set(value) {
-            field = value
-
-            progressBar.setCapacityProgress(storedValue, capacity)
-            progressBar.setLevelProgress(storedValue, toLevel)
-
-            if (value >= toLevel) {
-                if (!newLevelReached) {
-                    levelUpButton.setBackgroundColor(R.color.levelColor.color(context))
-                    newLevelReached = true
-                    onNewLevelReachedListener?.accept(true)
-                }
-            } else if (newLevelReached) {
-                levelUpButton.setBackgroundColor(R.color.itemDefaultBackground.color(context))
-                newLevelReached = false
-                onNewLevelReachedListener?.accept(false)
-            }
-
-            if (value >= capacity) {
-                if (!capacityReached) {
-                    capacityUpButton.setBackgroundColor(R.color.capacityColor.color(context))
-                    capacityReached = true
-                    onCapacityReachedListener?.accept(true)
-                }
-            } else if (capacityReached) {
-                capacityUpButton.setBackgroundColor(R.color.itemDefaultBackground.color(context))
-                capacityReached = false
-                onCapacityReachedListener?.accept(false)
-            }
+    val storedValue = AnimatedValue(0.sByte)
+        .apply {
+            onValueChanged = { updateUi() }
         }
 
     // listeners
@@ -82,10 +57,10 @@ class LevelPanelView(
     fun setOnCapacityReachedListener(listener: Consumer<Boolean>) { onCapacityReachedListener = listener }
 
     init {
-        Data.getBytes = { storedValue }
+        Data.getBytes = { storedValue.value }
         Data.consumeBytes = { bytes ->
-            if (storedValue >= bytes) {
-                storedValue -= bytes
+            if (storedValue.value >= bytes) {
+                storedValue.value -= bytes
                 true
             } else false
         }
@@ -93,14 +68,14 @@ class LevelPanelView(
         LayoutInflater.from(context).inflate(R.layout.component_level_panel, this, true)
 
         findViewById<TextView>(R.id.levelUpButton).setOnClickListener {
-            if (storedValue >= toLevel) {
+            if (storedValue.value >= toLevel) {
                 val expRequired = toLevel
                 Data.gridLevel++
-                storedValue -= expRequired
+                storedValue.value -= expRequired
                 levelUpButton.text = Data.gridLevel.toString()
                 onLevelUpListener?.accept(Data.gridLevel)
 
-                if (storedValue < toLevel) {
+                if (storedValue.value < toLevel) {
                     newLevelReached = false
                     onNewLevelReachedListener?.accept(false)
                 }
@@ -108,32 +83,74 @@ class LevelPanelView(
         }
 
         capacityUpButton.setOnClickListener {
-            capacity += storedValue
-            storedValue = 0.sByte
+            capacity += storedValue.value
+            storedValue.value = 0.sByte
             capacityReached = false
             onCapacityReachedListener?.accept(false)
         }
 
-        storedValue = 0.sByte
         levelUpButton.text = Data.gridLevel.toString()
     }
 
-    fun addBytes(value: SByte) {
-        val sum = storedValue + value
-        storedValue = if (sum > capacity) capacity else sum
+    fun addBytes(value: SByte, inAnimation: Boolean = false) {
+        if (value.isZero) return
+        storedValue.operate(inAnimation) {
+            (it + value).coerceAtMost(capacity)
+        }
     }
 
     fun appendToJson(json: JSONObject) {
+        val storedValue = storedValue.finalValue
+
         json.apply {
             put("storedValue", storedValue.value.toString())
             put("capacity", capacity.value.toString())
         }
     }
 
+    private fun updateUi() {
+        val levelUpBackgroundEdit =
+            if (storedValue.value >= toLevel) {
+                if (!newLevelReached) true
+                else null
+            } else if (newLevelReached) false
+            else null
+
+        levelUpBackgroundEdit?.let {
+            newLevelReached = it
+            onNewLevelReachedListener?.accept(it)
+        }
+
+        val capacityBackgroundEdit = if (storedValue.value >= capacity) {
+                if (!capacityReached) true
+                else null
+            } else if (capacityReached) false
+            else null
+
+        capacityBackgroundEdit?.let {
+            capacityReached = it
+            onCapacityReachedListener?.accept(it)
+        }
+
+        runOnUiThread {
+            progressBar.setCapacityProgress(storedValue.value, capacity)
+            progressBar.setLevelProgress(storedValue.value, toLevel)
+
+            levelUpBackgroundEdit
+                ?.let { if (it) R.color.levelColor else R.color.itemDefaultBackground }
+                ?.color(context)
+                ?.also { levelUpButton.setBackgroundColor(it) }
+
+            capacityBackgroundEdit
+                ?.let { if (it) R.color.capacityColor else R.color.itemDefaultBackground }
+                ?.color(context)
+                ?.also { capacityUpButton.setBackgroundColor(it) }
+        }
+    }
+
     fun fromJson(json: JSONObject) {
         capacity = json.getString("capacity").sByte
-        storedValue = json.getString("storedValue").sByte
-
+        storedValue.value = json.getString("storedValue").sByte
         levelUpButton.text = Data.gridLevel.toString()
     }
 }

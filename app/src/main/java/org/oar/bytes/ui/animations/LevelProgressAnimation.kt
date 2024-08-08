@@ -15,7 +15,7 @@ class LevelProgressAnimation(
     override val ref = panelView
     override val blockingGrid = false
 
-    private val initValue = panelView.storedValue
+    private val initValue = panelView.storedValue.value
     private val diff = (bytesToAdd + initValue).coerceAtMost(panelView.capacity) - initValue
     private var added = 0.sByte
 
@@ -39,13 +39,14 @@ class LevelProgressAnimation(
         val diffPart = diff.value.toBigDecimal().multiply(nx).sByte - added
         added += diffPart
 
-        panelView.addBytes(diffPart)
+        panelView.addBytes(diffPart, true)
         return true
     }
 
     override fun applyAnimation() {}
 
     override fun endAnimation() {
-        panelView.addBytes(diff - added)
+        panelView.addBytes(diff - added, true)
+        panelView.storedValue.clearFinal()
     }
 }

@@ -106,6 +106,11 @@ class GridActivity : AppCompatActivity() {
 
         idlePanel.setOnProduceByteListener { secs, bytes, animate ->
                 if (animate) {
+                    levelPanel.storedValue.apply {
+                        finalValue = value + bytes
+                    }
+                    hintsPanel.addFinalSeconds(secs)
+
                     Animator.addAndStart(listOf(
                         AnimationChain(idlePanel)
                             .next { WaitAnimation(1000) }
@@ -116,12 +121,13 @@ class GridActivity : AppCompatActivity() {
                     ))
                 } else {
                     levelPanel.addBytes(bytes)
-                    hintsPanel.addProgress(secs)
+                    hintsPanel.hints.forEach { it.addSeconds(secs) }
                 }
         }
-        grid.setOnProduceByteListener {
-            levelPanel.addBytes(it.mergedValue)
-            hintsPanel.addProgress(it.mergedLevels.sumOf { v -> v - 1 } * 12)
+        grid.setOnProduceByteListener { values ->
+            levelPanel.addBytes(values.mergedValue)
+            val secondsToAdd = values.mergedLevels.sumOf { v -> v - 1 } * 12
+            hintsPanel.hints.forEach { it.addSeconds(secondsToAdd) }
         }
 
         grid.setOnGameOverListener {
@@ -132,7 +138,7 @@ class GridActivity : AppCompatActivity() {
         grid.setOnLongClickListener {
             ConfirmDialog.show(this, R.string.title_confirm, R.string.restart_confirm, {
                 Animator.stopAll()
-                levelPanel.storedValue = 0.sByte
+                levelPanel.storedValue.value = 0.sByte
                 grid.restart()
             })
             true
@@ -160,7 +166,7 @@ class GridActivity : AppCompatActivity() {
             if (on) {
                 gridObserver = action()
                 gridObserver?.observe(this) {
-                    button.setProgress(0)
+                    button.reset()
                     button.active = false
                     cleanObserver()
                 }
@@ -176,13 +182,13 @@ class GridActivity : AppCompatActivity() {
 
         hintsPanel.setOnImproveLowerClickListener {
             if (grid.improveLowerHint()) {
-                hintsPanel.improveLower.setProgress(0)
+                hintsPanel.improveLower.reset()
             }
         }
 
         hintsPanel.setOnRevertClickListener {
             if (grid.revertLastHint()) {
-                hintsPanel.revert.setProgress(0)
+                hintsPanel.revert.reset()
             }
         }
 
@@ -232,7 +238,7 @@ class GridActivity : AppCompatActivity() {
         val bytesPerSecond = idlePanel.bytesSec
         if (!bytesPerSecond.isBiggerThanZero) return
 
-        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue
+        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue.value
         if (pendingBytesToCap.isBiggerThanZero) {
             val secondsToCap = (pendingBytesToCap/bytesPerSecond).value.toInt()
             if (secondsToCap < idlePanel.currentTime) {
@@ -240,7 +246,7 @@ class GridActivity : AppCompatActivity() {
             }
         }
 
-        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue
+        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue.value
         if (pendingBytesToLevel <= pendingBytesToCap && pendingBytesToLevel.isBiggerThanZero) {
             val secondsToLevel = (pendingBytesToLevel/bytesPerSecond).value.toInt()
             if (secondsToLevel < idlePanel.currentTime) {

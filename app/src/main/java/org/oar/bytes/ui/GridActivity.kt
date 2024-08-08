@@ -89,8 +89,11 @@ class GridActivity : AppCompatActivity() {
 
         adapter.energyFragment.viewInstance?.apply {
             timeView = findViewById(R.id.energyDeviceList)
-            timeView.setOnEnergyChangedListener {
-                idlePanel.maxTime = it
+            timeView.setOnEnergyChangedListener { energy, jsonLoad ->
+                idlePanel.maxTime = energy
+                if (!jsonLoad) {
+                    idlePanel.notifyMaxTimeUpdated()
+                }
             }
         }
         adapter.deviceFragment.viewInstance?.apply {

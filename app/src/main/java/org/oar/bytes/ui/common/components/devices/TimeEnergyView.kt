@@ -17,7 +17,7 @@ import org.oar.bytes.utils.JsonExt.jsonArray
 import org.oar.bytes.utils.JsonExt.mapJsonObject
 import org.oar.bytes.utils.NumbersExt.toHHMMSS
 import org.oar.bytes.utils.NumbersExt.toMins
-import java.util.function.Consumer
+import java.util.function.BiConsumer
 
 class TimeEnergyView(
     context: Context,
@@ -31,15 +31,15 @@ class TimeEnergyView(
     val levels = mutableMapOf<Int, Int>()
     private val percentLevels = mutableMapOf<Int, Int>()
 
-    private var onEnergyChangedListener: Consumer<Int>? = null
-    fun setOnEnergyChangedListener(listener: Consumer<Int>) { onEnergyChangedListener = listener }
+    private var onEnergyChangedListener: BiConsumer<Int, Boolean>? = null
+    fun setOnEnergyChangedListener(listener: BiConsumer<Int, Boolean>) { onEnergyChangedListener = listener }
 
     init {
         layoutManager = LinearLayoutManager(context)
         adapter = CustomAdapter()
     }
 
-    private fun updateTotalEnergy() {
+    private fun updateTotalEnergy(jsonLoad: Boolean) {
         val energy = Data.energyDevices
             .map {
                 val level = levels[it.id] ?: 0
@@ -47,7 +47,7 @@ class TimeEnergyView(
             }
             .reduce { a,b -> a + b }
 
-        onEnergyChangedListener?.accept(energy)
+        onEnergyChangedListener?.accept(energy, jsonLoad)
     }
 
     private inner class CustomAdapter: Adapter<CustomViewHolder>() {
@@ -110,7 +110,7 @@ class TimeEnergyView(
                     if (Data.consumeBytes(cost)) {
                         levels[device.id] = level + 1
                         updateEnergy(holder, device, level + 1)
-                        updateTotalEnergy()
+                        updateTotalEnergy(false)
                     }
                 }
             }
@@ -161,6 +161,6 @@ class TimeEnergyView(
             percentLevels.put(it.getInt("id"), it.getInt("percent"))
         }
 
-        updateTotalEnergy()
+        updateTotalEnergy(true)
     }
 }

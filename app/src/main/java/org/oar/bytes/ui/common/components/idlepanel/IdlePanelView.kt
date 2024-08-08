@@ -29,13 +29,6 @@ class IdlePanelView(
     private var recoverTimeThread: RecoverTimeThread? = null
 
     var maxTime = 0
-        set(value) {
-            field = value
-            if (recoverTimeThread == null && currentTime > 0 && currentTime < value) {
-                recoverTimeThread = RecoverTimeThread(false).apply { start() }
-            }
-        }
-
     var currentTime = 0
         private set(value) {
             field = if (value > maxTime) maxTime else value
@@ -103,6 +96,12 @@ class IdlePanelView(
         }
         if (recoverTimeThread == null && currentTime < maxTime) {
             recoverTimeThread = RecoverTimeThread().apply { start() }
+        }
+    }
+
+    fun notifyMaxTimeUpdated() {
+        if (recoverTimeThread == null && currentTime < maxTime) {
+            recoverTimeThread = RecoverTimeThread(false).apply { start() }
         }
     }
 

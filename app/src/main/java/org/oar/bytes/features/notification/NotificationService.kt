@@ -1,13 +1,18 @@
 package org.oar.bytes.features.notification
 
+import android.annotation.SuppressLint
 import android.app.AlarmManager
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service.NOTIFICATION_SERVICE
 import android.content.Context
 import android.content.Context.ALARM_SERVICE
+import android.content.Context.POWER_SERVICE
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
+import android.os.PowerManager
+import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import org.oar.bytes.features.notification.NotificationChannel.IDLE_ENDED
 import org.oar.bytes.features.notification.NotificationChannel.LEVEL_AVAILABLE
 import org.oar.bytes.features.notification.NotificationChannel.MAX_CAPACITY_REACHED
@@ -65,22 +70,25 @@ object NotificationService {
     }
 
     fun configureChannels(context: Context) {
-        val notificationManager = context
-            .getSystemService(NotificationManager::class.java)
+        context.apply {
+            val notificationManager = getSystemService(NotificationManager::class.java)
 
-        createChannel(context, LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
-        createChannel(context, MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
-        createChannel(context, IDLE_ENDED).apply(notificationManager::createNotificationChannel)
+            createChannel(LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
+            createChannel(MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
+            createChannel(IDLE_ENDED).apply(notificationManager::createNotificationChannel)
 
-        createSilentChannel(context, LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
-        createSilentChannel(context, MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
-        createSilentChannel(context, IDLE_ENDED).apply(notificationManager::createNotificationChannel)
+            createSilentChannel(LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
+            createSilentChannel(MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
+            createSilentChannel(IDLE_ENDED).apply(notificationManager::createNotificationChannel)
+
+            prioritizeNotifications()
+        }
     }
 
-    private fun createChannel(context: Context, channel: NotificationChannel) =
+    private fun Context.createChannel(channel: NotificationChannel) =
         android.app.NotificationChannel(
             channel.id,
-            channel.toString(context),
+            channel.toString(this),
             NotificationManager.IMPORTANCE_HIGH
         )
             .apply {
@@ -88,10 +96,10 @@ object NotificationService {
                 lightColor = Color.YELLOW
             }
 
-    private fun createSilentChannel(context: Context, channel: NotificationChannel) =
+    private fun Context.createSilentChannel(channel: NotificationChannel) =
         android.app.NotificationChannel(
             channel.silentId,
-            channel.toSilentString(context),
+            channel.toSilentString(this),
             NotificationManager.IMPORTANCE_HIGH
         )
             .apply {
@@ -99,4 +107,17 @@ object NotificationService {
                 enableLights(true)
                 lightColor = Color.YELLOW
             }
+
+    @SuppressLint("BatteryLife")
+    private fun Context.prioritizeNotifications() {
+        val packageName = this.packageName
+        val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
+        if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
+            val intent = Intent().apply {
+                setAction(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                setData(Uri.parse("package:$packageName"))
+            }
+            this.startActivity(intent)
+        }
+    }
 }

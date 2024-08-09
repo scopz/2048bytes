@@ -1,6 +1,5 @@
 package org.oar.bytes.ui
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -35,7 +34,6 @@ import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
-import org.oar.bytes.utils.SaveStateExt.deleteState
 import org.oar.bytes.utils.SaveStateExt.hasState
 import org.oar.bytes.utils.SaveStateExt.loadState
 import org.oar.bytes.utils.SaveStateExt.saveState
@@ -57,11 +55,6 @@ class GridActivity : AppCompatActivity() {
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         InitialLoad.loadData(this)
         setContentView(R.layout.activity_grid)
-
-        if (intent.getBooleanExtra("reset", false)) {
-            deleteState()
-            Data.gridLevel = 1
-        }
 
         clearScheduledNotifications()
 
@@ -147,14 +140,6 @@ class GridActivity : AppCompatActivity() {
 
         levelPanel.setLevelUpListener {
             grid.advancedGridLevel()
-        }
-
-        levelPanel.setOnLongClickListener {
-            val intent = Intent(this, GridActivity::class.java)
-            intent.putExtra("reset", true)
-            startActivity(intent)
-            finish()
-            true
         }
 
         levelPanel.setOnCapacityReachedListener {

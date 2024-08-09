@@ -6,7 +6,6 @@ import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import androidx.core.app.NotificationCompat
 import org.oar.bytes.R
 import org.oar.bytes.ui.InitActivity
@@ -32,19 +31,11 @@ class NotificationReceiver : BroadcastReceiver() {
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
             }
 
-        val color = when(context.loadString("led", "yellow")) {
-            "magenta" -> Color.MAGENTA
-            "cyan" -> Color.CYAN
-            "blue" -> Color.BLUE
-            "white" -> Color.WHITE
-            else -> Color.YELLOW
-        }
-
         val channelId = if (mustBeSilent(context)) channel.silentId else channel.id
 
         val text = channel.toString(context)
 
-        val builder = NotificationCompat.Builder(context, "$channelId$color")
+        val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_launcher_background)
             .setContentTitle(context.getString(R.string.app_name))
             .setContentText(text)

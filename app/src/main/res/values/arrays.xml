@@ -1,18 +1,2 @@
 <resources>
-    <!-- Reply Preference -->
-    <string-array name="led_entries">
-        <item>Yellow</item>
-        <item>Magenta</item>
-        <item>Cyan</item>
-        <item>Blue</item>
-        <item>White<item>
-    </string-array>
-
-    <string-array name="led_values">
-        <item>yellow</item>
-        <item>magenta</item>
-        <item>cyan</item>
-        <item>blue</item>
-        <item>white</item>
-    </string-array>
 </resources>

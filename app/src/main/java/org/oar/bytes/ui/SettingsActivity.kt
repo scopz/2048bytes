@@ -6,10 +6,8 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.EditTextPreference
-import androidx.preference.ListPreference
 import androidx.preference.PreferenceFragmentCompat
 import org.oar.bytes.R
-import org.oar.bytes.features.notification.NotificationService
 import org.oar.bytes.utils.ComponentsExt.overridePendingSideTransition
 
 
@@ -64,11 +62,6 @@ class SettingsActivity : AppCompatActivity() {
                         matches
                     }
                 }
-
-            findPreference<ListPreference>("led")?.setOnPreferenceChangeListener { _, _ ->
-                NotificationService.configureChannels(requireContext())
-                true
-            }
         }
 
         companion object {

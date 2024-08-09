@@ -18,7 +18,6 @@
     <string name="notifications_header">Notifications</string>
 
     <!-- Notifications Preferences -->
-    <string name="led_title">LED Color</string>
     <string name="stop_time_title">Stop Time</string>
     <string name="start_time_title">Start Time</string>
 

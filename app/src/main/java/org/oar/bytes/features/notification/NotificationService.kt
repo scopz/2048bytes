@@ -16,7 +16,6 @@ import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import org.oar.bytes.features.notification.NotificationChannel.IDLE_ENDED
 import org.oar.bytes.features.notification.NotificationChannel.LEVEL_AVAILABLE
 import org.oar.bytes.features.notification.NotificationChannel.MAX_CAPACITY_REACHED
-import org.oar.bytes.utils.PreferencesExt.loadString
 
 
 object NotificationService {
@@ -74,26 +73,18 @@ object NotificationService {
         context.apply {
             val notificationManager = getSystemService(NotificationManager::class.java)
 
-            val color = when(loadString("led", "yellow")) {
-                "magenta" -> Color.MAGENTA
-                "cyan" -> Color.CYAN
-                "blue" -> Color.BLUE
-                "white" -> Color.WHITE
-                else -> Color.YELLOW
-            }
-
             listOf(
-                createChannel(LEVEL_AVAILABLE, color),
-                createChannel(MAX_CAPACITY_REACHED, color),
-                createChannel(IDLE_ENDED, color),
+                createChannel(LEVEL_AVAILABLE),
+                createChannel(MAX_CAPACITY_REACHED),
+                createChannel(IDLE_ENDED),
 
-                createSilentChannel(LEVEL_AVAILABLE, color),
-                createSilentChannel(MAX_CAPACITY_REACHED, color),
-                createSilentChannel(IDLE_ENDED, color),
+                createSilentChannel(LEVEL_AVAILABLE),
+                createSilentChannel(MAX_CAPACITY_REACHED),
+                createSilentChannel(IDLE_ENDED),
 
             ).forEach {
                 it.enableLights(true)
-                it.lightColor = color
+                it.lightColor = Color.YELLOW
                 notificationManager.createNotificationChannel(it)
             }
 
@@ -101,16 +92,16 @@ object NotificationService {
         }
     }
 
-    private fun Context.createChannel(channel: NotificationChannel, color: Int) =
+    private fun Context.createChannel(channel: NotificationChannel) =
         android.app.NotificationChannel(
-            "${channel.id}$color",
+            channel.id,
             channel.toString(this),
             NotificationManager.IMPORTANCE_HIGH
         )
 
-    private fun Context.createSilentChannel(channel: NotificationChannel, color: Int) =
+    private fun Context.createSilentChannel(channel: NotificationChannel) =
         android.app.NotificationChannel(
-            "${channel.silentId}$color",
+            channel.silentId,
             channel.toSilentString(this),
             NotificationManager.IMPORTANCE_HIGH
         )

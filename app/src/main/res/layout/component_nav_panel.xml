@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:orientation="horizontal" >
+
+    <RelativeLayout
+        android:id="@+id/prevButton"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:background="@color/navColor">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingVertical="10dp"
+            android:src="@drawable/ic_arrow_left_24dp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/nextButton"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:background="@color/navColor">
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingVertical="10dp"
+            android:src="@drawable/ic_arrow_right_24dp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:id="@+id/settingsButton"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_weight="0"
+        android:layout_marginStart="16dp"
+        android:gravity="center"
+        android:background="@color/optionsColor"
+        android:visibility="gone" >
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingVertical="10dp"
+            android:src="@drawable/ic_gear_24dp" />
+
+    </RelativeLayout>
+
+</LinearLayout>

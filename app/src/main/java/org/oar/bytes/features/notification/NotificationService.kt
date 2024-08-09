@@ -16,6 +16,7 @@ import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import org.oar.bytes.features.notification.NotificationChannel.IDLE_ENDED
 import org.oar.bytes.features.notification.NotificationChannel.LEVEL_AVAILABLE
 import org.oar.bytes.features.notification.NotificationChannel.MAX_CAPACITY_REACHED
+import org.oar.bytes.utils.PreferencesExt.loadString
 
 
 object NotificationService {
@@ -73,39 +74,48 @@ object NotificationService {
         context.apply {
             val notificationManager = getSystemService(NotificationManager::class.java)
 
-            createChannel(LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
-            createChannel(MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
-            createChannel(IDLE_ENDED).apply(notificationManager::createNotificationChannel)
+            val color = when(loadString("led", "yellow")) {
+                "magenta" -> Color.MAGENTA
+                "cyan" -> Color.CYAN
+                "blue" -> Color.BLUE
+                "white" -> Color.WHITE
+                else -> Color.YELLOW
+            }
 
-            createSilentChannel(LEVEL_AVAILABLE).apply(notificationManager::createNotificationChannel)
-            createSilentChannel(MAX_CAPACITY_REACHED).apply(notificationManager::createNotificationChannel)
-            createSilentChannel(IDLE_ENDED).apply(notificationManager::createNotificationChannel)
+            listOf(
+                createChannel(LEVEL_AVAILABLE, color),
+                createChannel(MAX_CAPACITY_REACHED, color),
+                createChannel(IDLE_ENDED, color),
+
+                createSilentChannel(LEVEL_AVAILABLE, color),
+                createSilentChannel(MAX_CAPACITY_REACHED, color),
+                createSilentChannel(IDLE_ENDED, color),
+
+            ).forEach {
+                it.enableLights(true)
+                it.lightColor = color
+                notificationManager.createNotificationChannel(it)
+            }
 
             prioritizeNotifications()
         }
     }
 
-    private fun Context.createChannel(channel: NotificationChannel) =
+    private fun Context.createChannel(channel: NotificationChannel, color: Int) =
         android.app.NotificationChannel(
-            channel.id,
+            "${channel.id}$color",
             channel.toString(this),
             NotificationManager.IMPORTANCE_HIGH
         )
-            .apply {
-                enableLights(true)
-                lightColor = Color.YELLOW
-            }
 
-    private fun Context.createSilentChannel(channel: NotificationChannel) =
+    private fun Context.createSilentChannel(channel: NotificationChannel, color: Int) =
         android.app.NotificationChannel(
-            channel.silentId,
+            "${channel.silentId}$color",
             channel.toSilentString(this),
             NotificationManager.IMPORTANCE_HIGH
         )
             .apply {
                 setSound(null, null)
-                enableLights(true)
-                lightColor = Color.YELLOW
             }
 
     @SuppressLint("BatteryLife")

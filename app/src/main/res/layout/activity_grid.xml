@@ -26,6 +26,13 @@
     <org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
         android:id="@+id/idle"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"/>
+
+    <org.oar.bytes.ui.common.components.idlepanel.NavPanelView
+        android:id="@+id/nav"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"/>
 
 </LinearLayout>

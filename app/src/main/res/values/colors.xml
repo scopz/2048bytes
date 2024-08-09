@@ -37,6 +37,8 @@
     <color name="timePanelButtonColor">#2F00</color>
     <color name="speedPanelColor">#FFC571</color>
     <color name="speedPanelButtonColor">#22FF3C00</color>
+    <color name="navColor">#F1C6E3</color>
+    <color name="optionsColor">#D4CDFF</color>
 
     <color name="capacityColor">#9CE0FF</color>
     <color name="levelColor">#FFCAB2</color>

@@ -1,0 +1,26 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory app:title="@string/notifications_header">
+
+        <ListPreference
+            app:key="led"
+            app:defaultValue="yellow"
+            app:entries="@array/led_entries"
+            app:entryValues="@array/led_values"
+            app:title="@string/led_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="stop"
+            app:defaultValue="20:30"
+            app:title="@string/stop_time_title"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:key="start"
+            app:defaultValue="6:30"
+            app:title="@string/start_time_title"
+            app:useSimpleSummaryProvider="true" />
+        
+    </PreferenceCategory>
+
+</PreferenceScreen>

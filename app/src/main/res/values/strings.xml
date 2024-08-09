@@ -12,4 +12,15 @@
     <string name="level_available_notification_text">Next level is available</string>
     <string name="max_capacity_reached_notification_text">Max capacity reached</string>
     <string name="idle_ended_notification_text">Idle time ended</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+
+    <!-- Preference Titles -->
+    <string name="notifications_header">Notifications</string>
+
+    <!-- Notifications Preferences -->
+    <string name="led_title">LED Color</string>
+    <string name="stop_time_title">Stop Time</string>
+    <string name="start_time_title">Start Time</string>
+
+    <string name="time_error_format">The time provided is not valid</string>
 </resources>

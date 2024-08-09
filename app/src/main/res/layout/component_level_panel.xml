@@ -28,6 +28,6 @@
         android:padding="10dp"
         android:gravity="center"
         android:background="@color/itemDefaultBackground"
-        android:src="@drawable/battery_plus_24px" />
+        android:src="@drawable/ic_battery_plus_24px" />
 
 </LinearLayout>

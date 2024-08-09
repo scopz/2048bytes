@@ -113,10 +113,10 @@ class GridActivity : AppCompatActivity() {
 
                     Animator.addAndStart(listOf(
                         AnimationChain(idlePanel)
-                            .next { WaitAnimation(1000) }
+                            .next { WaitAnimation(700) }
                             .next { LevelProgressAnimation(levelPanel, bytes, 1000) },
                         AnimationChain(hintsPanel)
-                            .next { WaitAnimation(1000) }
+                            .next { WaitAnimation(700) }
                             .next { HintsProgressAnimation(hintsPanel, secs, 1000) }
                     ))
                 } else {

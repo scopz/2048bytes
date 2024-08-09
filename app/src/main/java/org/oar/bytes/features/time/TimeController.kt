@@ -67,31 +67,7 @@ object TimeController {
             if (!keepTimeData) { // finished timeData
                 this.timeData.remove(hashId)
             }
-            if (timeReference is TimeNotifiable) {
-                NotificationPublisher.cancelDelayed(context, hashId)
-            }
         }
-    }
-
-    fun setNotifications(context: Context) {
-        val timeHashes = timeData.keys
-        timeHashes.forEach { hashId ->
-            val timeReference = timedReferences[hashId]
-
-            if (timeReference is TimeNotifiable) {
-                val startTime = timeData[hashId]?.startTime ?: return@forEach
-                val delay = timeReference.getRelativeFinishDate() - (lastShutdownTime - startTime)
-
-                if (delay > 0) {
-                    NotificationPublisher.notify(context, hashId, timeReference.getNotificationChannel(), delay)
-                }
-            }
-        }
-    }
-
-    fun clearAll() {
-        timedReferences.clear()
-        timeData.clear()
     }
 
     fun appendToJson(json: JSONObject) {

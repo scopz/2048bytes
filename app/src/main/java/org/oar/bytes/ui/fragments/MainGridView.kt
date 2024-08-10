@@ -21,6 +21,7 @@ import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.hints.HintButtonView
 import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
+import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
@@ -48,20 +49,23 @@ class MainGridView(
         )
         pager.setCurrentItem(1, false)
 
+        findViewById<NavPanelView>(R.id.nav)
+            .onSettingsButtonClick = { switchView(1) }
+
         pager.getView<View>(1)?.apply {
             grid = findViewById(R.id.grid)
             hintsPanel = findViewById(R.id.hintsPanel)
 
-            addOnLayoutChangeListener(object : View.OnLayoutChangeListener {
-                override fun onLayoutChange(
-                    v: View,
-                    left: Int, top: Int, right: Int, bottom: Int,
-                    oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
-                ) {
-                    pager.layoutParams.height = bottom - top
-                    removeOnLayoutChangeListener(this)
-                }
-            })
+//            addOnLayoutChangeListener(object : OnLayoutChangeListener {
+//                override fun onLayoutChange(
+//                    v: View,
+//                    left: Int, top: Int, right: Int, bottom: Int,
+//                    oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
+//                ) {
+//                    pager.layoutParams.height = bottom - top
+//                    removeOnLayoutChangeListener(this)
+//                }
+//            })
         }
 
         pager.getView<View>(0)?.apply {
@@ -162,11 +166,6 @@ class MainGridView(
                 grid.clearSelectAction()
                 cleanObserver()
             }
-        }
-
-        hintsPanel.setOnLongClickListener {
-            switchView(1)
-            true
         }
 
         hintsPanel.setOnAddClickListener { on ->

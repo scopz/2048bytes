@@ -1,0 +1,5 @@
+<resources>
+    <declare-styleable name="NavPanelView">
+        <attr name="settingsButton" format="boolean" />
+    </declare-styleable>
+</resources>

@@ -1,16 +1,10 @@
 package org.oar.bytes.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.Window
-import androidx.annotation.LayoutRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.MutableLiveData
-import androidx.viewpager2.adapter.FragmentStateAdapter
-import androidx.viewpager2.widget.ViewPager2
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
@@ -32,6 +26,7 @@ import org.oar.bytes.ui.common.components.hints.HintButtonView
 import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
+import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.SaveStateExt.hasState
@@ -42,7 +37,7 @@ class GridActivity : AppCompatActivity() {
 
     private val levelPanel by lazy { findViewById<LevelPanelView>(R.id.levelPanel) }
     private val idlePanel by lazy { findViewById<IdlePanelView>(R.id.idle) }
-    private val pager by lazy { findViewById<ViewPager2>(R.id.pager) }
+    private val pager by lazy { findViewById<FragmentPager>(R.id.pager) }
 
     private lateinit var hintsPanel: HintsView
     private lateinit var grid: Grid2048View
@@ -58,12 +53,14 @@ class GridActivity : AppCompatActivity() {
 
         clearScheduledNotifications()
 
-        val adapter = SectionsPagerAdapter()
-        pager.adapter = adapter
-        pager.isUserInputEnabled = false
+        pager.setFragments(
+            R.layout.fragment_time_energy,
+            R.layout.fragment_grid,
+            R.layout.fragment_speed_device
+        )
         pager.setCurrentItem(1, false)
 
-        adapter.gridFragment.viewInstance?.apply {
+        pager.getView(1)?.apply {
             grid = findViewById(R.id.grid)
             hintsPanel = findViewById(R.id.hintsPanel)
 
@@ -77,10 +74,9 @@ class GridActivity : AppCompatActivity() {
                     removeOnLayoutChangeListener(this)
                 }
             })
-
         }
 
-        adapter.energyFragment.viewInstance?.apply {
+        pager.getView(0)?.apply {
             timeView = findViewById(R.id.energyDeviceList)
             timeView.setOnEnergyChangedListener { energy, jsonLoad ->
                 idlePanel.maxTime = energy
@@ -89,7 +85,7 @@ class GridActivity : AppCompatActivity() {
                 }
             }
         }
-        adapter.deviceFragment.viewInstance?.apply {
+        pager.getView(2)?.apply {
             speedView = findViewById(R.id.deviceList)
             speedView.setOnSpeedChangedListener {
                 idlePanel.bytesSec = it
@@ -271,34 +267,5 @@ class GridActivity : AppCompatActivity() {
         TimeController.notifyOfflineTime(this)
         idlePanel.startTimer()
         clearScheduledNotifications()
-    }
-
-
-    inner class SectionsPagerAdapter : FragmentStateAdapter(supportFragmentManager, lifecycle) {
-        val gridFragment = Id2Fragment<View>(R.layout.fragment_grid, layoutInflater)
-        val energyFragment = Id2Fragment<View>(R.layout.fragment_time_energy, layoutInflater)
-        val deviceFragment = Id2Fragment<View>(R.layout.fragment_speed_device, layoutInflater)
-
-        override fun getItemCount() = 3
-
-        override fun createFragment(position: Int): Fragment {
-            return when(position) {
-                0 -> energyFragment
-                2 -> deviceFragment
-                else -> gridFragment
-            }
-        }
-    }
-
-    class Id2Fragment<T : View>(
-        @LayoutRes id: Int,
-        inflater: LayoutInflater?
-    ): Fragment() {
-        constructor() : this(0, null)
-
-        @Suppress("UNCHECKED_CAST")
-        val viewInstance = if (id == 0) null else inflater?.inflate(id, null) as T?
-
-        override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = viewInstance
     }
 }

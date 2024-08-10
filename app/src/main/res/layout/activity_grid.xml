@@ -17,7 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp" />
 
-    <androidx.viewpager2.widget.ViewPager2
+
+    <org.oar.bytes.ui.common.pager.FragmentPager
         android:id="@+id/pager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

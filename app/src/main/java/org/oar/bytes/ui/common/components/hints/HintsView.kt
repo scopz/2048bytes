@@ -12,8 +12,8 @@ import java.util.function.Consumer
 
 class HintsView(
     context: Context,
-    attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
 
     private var onAddClickListener: Consumer<Boolean>? = null
     fun setOnAddClickListener(listener: Consumer<Boolean>) { onAddClickListener = listener }

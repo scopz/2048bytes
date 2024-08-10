@@ -7,8 +7,8 @@ import android.view.View
 
 open class LimitedDrawView(
     context: Context,
-    attr: AttributeSet? = null
-) : View(context, attr) {
+    attrs: AttributeSet? = null
+) : View(context, attrs) {
 
     private var invalidated = false
     private var nextInvalidationPending = false

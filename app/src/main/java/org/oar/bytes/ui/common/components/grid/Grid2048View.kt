@@ -45,8 +45,8 @@ import java.util.function.Consumer
 
 class Grid2048View(
     context: Context,
-    attr: AttributeSet? = null
-) : LimitedDrawView(context, attr) {
+    attrs: AttributeSet? = null
+) : LimitedDrawView(context, attrs) {
 
     private val baseByteValue
         get() = 1.sByte.double(Data.gridLevel-1)

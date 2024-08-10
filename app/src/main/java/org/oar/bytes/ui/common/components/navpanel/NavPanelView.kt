@@ -11,15 +11,15 @@ import org.oar.bytes.R.styleable.NavPanelView_settingsButton
 
 class NavPanelView(
     context: Context,
-    attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
 
     var onSettingsButtonClick: (() -> Unit)? = null
     var onNextButtonClick: (() -> Unit)? = null
     var onPrevButtonClick: (() -> Unit)? = null
 
     init {
-        val styledAttributes = context.obtainStyledAttributes(attr, NavPanelView)
+        val styledAttributes = context.obtainStyledAttributes(attrs, NavPanelView)
         val showSettingsButton = styledAttributes.getBoolean(NavPanelView_settingsButton, false)
         styledAttributes.recycle()
 

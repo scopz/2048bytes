@@ -17,8 +17,8 @@ import org.oar.bytes.utils.NumbersExt.toDynamicHHMMSS
 
 class HintButtonView(
     context: Context,
-    attr: AttributeSet? = null
-) : LimitedDrawFrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : LimitedDrawFrameLayout(context, attrs) {
 
     private var setOnReadyListener: Runnable? = null
     fun setOnReadyListener(listener: Runnable) { setOnReadyListener = listener }
@@ -60,7 +60,7 @@ class HintButtonView(
     init {
         LayoutInflater.from(context).inflate(R.layout.component_hints_button, this, true)
 
-        attr
+        attrs
             ?.getAttributeResourceValue("http://schemas.android.com/apk/res/android", "src", id)
             .also {
                 if (it == null || it == id) throw RuntimeException("Hud view id not found")

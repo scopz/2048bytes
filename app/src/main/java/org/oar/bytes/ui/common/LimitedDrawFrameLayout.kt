@@ -7,8 +7,8 @@ import android.widget.FrameLayout
 
 open class LimitedDrawFrameLayout(
     context: Context,
-    attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
 
     private var invalidated = false
     private var nextInvalidationPending = false

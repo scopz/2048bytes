@@ -21,8 +21,8 @@ import java.util.function.Consumer
 
 class SpeedDeviceView(
     context: Context,
-    attr: AttributeSet? = null
-) : RecyclerView(context, attr) {
+    attrs: AttributeSet? = null
+) : RecyclerView(context, attrs) {
 
     companion object {
         private const val MAX_LEVEL = 30

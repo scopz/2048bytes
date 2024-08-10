@@ -21,8 +21,8 @@ import org.oar.bytes.utils.TriConsumer
 
 class IdlePanelView(
     context: Context,
-    attr: AttributeSet? = null
-) : FrameLayout(context, attr), TimeControlled {
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs), TimeControlled {
 
     private var onGoing = false
     private var idleTickThread: IdleTickThread? = null

@@ -15,8 +15,8 @@ import org.oar.bytes.utils.NumbersExt.color
 
 class ProgressBarView(
     context: Context,
-    attr: AttributeSet? = null
-) : LimitedDrawFrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : LimitedDrawFrameLayout(context, attrs) {
 
     private var capacityProgress = 0f
         set(value) {

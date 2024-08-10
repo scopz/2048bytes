@@ -19,8 +19,8 @@ import java.util.function.Consumer
 
 class LevelPanelView(
     context: Context,
-    attr: AttributeSet? = null
-) : FrameLayout(context, attr) {
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
 
     private val levelUpButton by lazy { findViewById<TextView>(R.id.levelUpButton) }
     private val capacityUpButton by lazy { findViewById<ImageView>(R.id.capacityUpButton) }

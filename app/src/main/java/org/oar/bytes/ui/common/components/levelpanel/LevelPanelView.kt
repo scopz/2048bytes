@@ -100,10 +100,8 @@ class LevelPanelView(
     }
 
     fun appendToJson(json: JSONObject) {
-        val storedValue = storedValue.finalValue
-
         json.apply {
-            put("storedValue", storedValue.value.toString())
+            put("storedValue", storedValue.finalValue.value.toString())
             put("capacity", capacity.value.toString())
         }
     }

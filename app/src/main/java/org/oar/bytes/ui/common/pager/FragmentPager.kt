@@ -36,6 +36,14 @@ class FragmentPager(
         addView(pager)
     }
 
+    override fun onFinishInflate() {
+        super.onFinishInflate()
+        List(childCount - 1) { 1 }
+            .map { getChildAt(it).apply { removeView(this) } }
+            .map { IdFragment(it) }
+            .also { fragments.addAll(it) }
+    }
+
     fun setFragments(@LayoutRes vararg ids: Int) =
         ids
             .map { IdFragment<View>(it, activity.layoutInflater) }
@@ -48,7 +56,11 @@ class FragmentPager(
         get() = pager.currentItem
         set(value) = setCurrentItem(value)
 
-    fun getView(position: Int) = fragments[position].viewInstance
+    fun getViews() = fragments.mapNotNull { it.viewInstance }
+    @Suppress("UNCHECKED_CAST")
+    fun <T: View> getView(position: Int) = fragments[position].viewInstance as? T
+    @Suppress("UNCHECKED_CAST")
+    fun <T: View> getActiveView() = fragments[pager.currentItem].viewInstance as? T
 
     inner class SectionsPagerAdapter : FragmentStateAdapter(activity.supportFragmentManager, activity.lifecycle) {
         override fun getItemCount() = fragments.size
@@ -57,12 +69,15 @@ class FragmentPager(
 
     class IdFragment<T : View>(
         @LayoutRes id: Int,
-        inflater: LayoutInflater?
+        inflater: LayoutInflater?,
+        sourceView: T? = null
     ): Fragment() {
         constructor() : this(0, null)
+        constructor(sourceView: T) : this(0, null, sourceView)
 
         @Suppress("UNCHECKED_CAST")
-        val viewInstance = if (id == 0) null else inflater?.inflate(id, null) as T?
+        val viewInstance = sourceView ?:
+            if (id == 0) null else inflater?.inflate(id, null) as T?
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = viewInstance
     }

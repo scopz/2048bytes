@@ -136,7 +136,7 @@ class IdlePanelView(
 
             try {
                 if (initDelay) {
-                    sleep(1000L)
+                    sleep(700L)
                 }
                 while (currentTime < maxTime) {
                     val initTime = System.nanoTime()

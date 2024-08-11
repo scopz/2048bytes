@@ -2,6 +2,7 @@ package org.oar.bytes.ui.fragments
 
 import android.content.Context
 import android.util.AttributeSet
+import android.view.View
 import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import org.json.JSONObject
@@ -31,4 +32,17 @@ abstract class MainView(
     open fun fromJson(json: JSONObject) { }
     open fun appendToJson(json: JSONObject) { }
     open fun scheduleNotifications() { }
+
+    protected fun View.listenNextLayoutChange(listener: (Int, Int, Int, Int) -> Unit) {
+        addOnLayoutChangeListener(object : OnLayoutChangeListener {
+            override fun onLayoutChange(
+                v: View,
+                left: Int, top: Int, right: Int, bottom: Int,
+                oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
+            ) {
+                removeOnLayoutChangeListener(this)
+                listener(left, top, right, bottom)
+            }
+        })
+    }
 }

@@ -34,7 +34,7 @@ class LevelPanelView(
         }
 
     var toLevel: SByte
-        get() = Constants.LEVEL_EXP[Data.gridLevel - 1]
+        get() = Constants.LEVEL_EXP[Data.gameLevel - 1]
         private set(value) {
             progressBar.setLevelProgress(storedValue.value, value)
         }
@@ -70,10 +70,10 @@ class LevelPanelView(
         findViewById<TextView>(R.id.levelUpButton).setOnClickListener {
             if (storedValue.value >= toLevel) {
                 val expRequired = toLevel
-                Data.gridLevel++
+                Data.gameLevel++
                 storedValue.value -= expRequired
-                levelUpButton.text = Data.gridLevel.toString()
-                onLevelUpListener?.accept(Data.gridLevel)
+                levelUpButton.text = Data.gameLevel.toString()
+                onLevelUpListener?.accept(Data.gameLevel)
 
                 if (storedValue.value < toLevel) {
                     newLevelReached = false
@@ -89,7 +89,7 @@ class LevelPanelView(
             onCapacityReachedListener?.accept(false)
         }
 
-        levelUpButton.text = Data.gridLevel.toString()
+        levelUpButton.text = Data.gameLevel.toString()
     }
 
     fun addBytes(value: SByte, inAnimation: Boolean = false) {
@@ -149,6 +149,6 @@ class LevelPanelView(
     fun fromJson(json: JSONObject) {
         capacity = json.getString("capacity").sByte
         storedValue.value = json.getString("storedValue").sByte
-        levelUpButton.text = Data.gridLevel.toString()
+        levelUpButton.text = Data.gameLevel.toString()
     }
 }

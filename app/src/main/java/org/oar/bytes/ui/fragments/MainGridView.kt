@@ -23,7 +23,7 @@ import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
-import org.oar.bytes.utils.Data
+import org.oar.bytes.utils.ComponentsExt.calculatedHeight
 import org.oar.bytes.utils.NumbersExt.sByte
 
 class MainGridView(
@@ -56,16 +56,14 @@ class MainGridView(
             grid = findViewById(R.id.grid)
             hintsPanel = findViewById(R.id.hintsPanel)
 
-//            addOnLayoutChangeListener(object : OnLayoutChangeListener {
-//                override fun onLayoutChange(
-//                    v: View,
-//                    left: Int, top: Int, right: Int, bottom: Int,
-//                    oldLeft: Int, oldTop: Int, oldRight: Int, oldBottom: Int
-//                ) {
-//                    pager.layoutParams.height = bottom - top
-//                    removeOnLayoutChangeListener(this)
-//                }
-//            })
+            listenNextLayoutChange { _, top, _, bottom ->
+                this@MainGridView.apply {
+                    listenNextLayoutChange { _, _, _, _ ->
+                        activity.changeHeight(calculatedHeight, true)
+                    }
+                }
+                pager.layoutParams.height = bottom - top
+            }
         }
 
         pager.getView<View>(0)?.apply {
@@ -132,6 +130,7 @@ class MainGridView(
             true
         }
 
+        // TODO: Move to GridActivity somehow
         levelPanel.setLevelUpListener {
             grid.advancedGridLevel()
         }
@@ -214,8 +213,6 @@ class MainGridView(
     }
 
     override fun fromJson(json: JSONObject) {
-        Data.gridLevel = json.getInt("gridLevel")
-
         timeView.fromJson(json)
         speedView.fromJson(json)
         idlePanel.fromJson(json)
@@ -229,8 +226,6 @@ class MainGridView(
         idlePanel.appendToJson(json)
         speedView.appendToJson(json)
         timeView.appendToJson(json)
-
-        json.put("gridLevel", Data.gridLevel)
     }
 
     override fun scheduleNotifications() {

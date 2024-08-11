@@ -49,7 +49,7 @@ class Grid2048View(
 ) : LimitedDrawView(context, attrs) {
 
     private val baseByteValue
-        get() = 1.sByte.double(Data.gridLevel-1)
+        get() = 1.sByte.double(Data.gameLevel-1)
 
     private var tileSize: Int = 0
     private val tiles = mutableListOf<GridTile>()

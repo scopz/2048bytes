@@ -22,6 +22,8 @@
     <color name="shade10">#5B2DAE</color>
     <color name="shade11">#401B86</color>
     <color name="shade12">#26085D</color>
+    <color name="shade13">#13042F</color>
+    <color name="shade14">#000000</color>
 
     <color name="bump01">#FFF</color>
     <color name="bump02">#EEE</color>

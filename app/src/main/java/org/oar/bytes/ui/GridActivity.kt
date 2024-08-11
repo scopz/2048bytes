@@ -6,12 +6,16 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONObject
 import org.oar.bytes.R
+import org.oar.bytes.features.animate.AnimationChain
+import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.features.notification.NotificationService.clearScheduledNotifications
 import org.oar.bytes.features.time.TimeController
+import org.oar.bytes.ui.animations.ResizeHeightAnimation
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.ui.fragments.MainView
+import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.SaveStateExt.hasState
 import org.oar.bytes.utils.SaveStateExt.loadState
 import org.oar.bytes.utils.SaveStateExt.saveState
@@ -47,26 +51,42 @@ class GridActivity : AppCompatActivity() {
             runOnMainViews { newGame() }
         }
 
+        pager.onHeightChange = this::changeHeight
+
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
                 override fun handleOnBackPressed() {
-                    if (pager.currentItem == MAIN_VIEW_INDEX) {
-                        pager.getActiveView<MainView>()
-                            ?.onBack()
-                            ?.takeIf { !it }
-                            ?: finish()
-                    } else {
-                        pager.currentItem = MAIN_VIEW_INDEX
+                    val activeView = pager.getActiveView<MainView>()
+                    if (activeView == null || activeView.onBack()) {
+                        if (pager.currentItem == MAIN_VIEW_INDEX) {
+                            finish()
+                        } else {
+                            switchView(MAIN_VIEW_INDEX)
+                        }
                     }
                 }
             }
         )
     }
 
+    fun changeHeight(height: Int, animate: Boolean = true) {
+        if (animate) {
+            ResizeHeightAnimation(pager, height, 250, this@GridActivity::runOnUiThread)
+                .let { anim -> AnimationChain(pager).next { anim }}
+                .also(Animator::addAndStart)
+        } else {
+            runOnUiThread {
+                pager.layoutParams.height = height
+                pager.requestLayout()
+            }
+        }
+    }
+
     override fun onPause() {
         TimeController.setLastShutdownTime()
 
         val json = JSONObject()
+        json.put("gridLevel", Data.gameLevel)
         TimeController.appendToJson(json)
         levelPanel.appendToJson(json)
 
@@ -98,6 +118,7 @@ class GridActivity : AppCompatActivity() {
     }
 
     private fun reloadState(json: JSONObject) {
+        Data.gameLevel = json.getInt("gridLevel")
         TimeController.fromJson(json)
         runOnMainViews { fromJson(json) }
         levelPanel.fromJson(json)

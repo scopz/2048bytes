@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
+import org.oar.bytes.utils.ComponentsExt.calculatedHeight
 
 class FragmentPager(
     context: Context,
@@ -21,6 +22,7 @@ class FragmentPager(
     private val activity = context as FragmentActivity
     private val pager: ViewPager2 = ViewPager2(context, attrs)
     private val fragments = mutableListOf<IdFragment<View>>()
+    var onHeightChange: ((Int, Boolean) -> Unit)? = null
 
     init {
         pager.apply {
@@ -49,8 +51,15 @@ class FragmentPager(
             .map { IdFragment<View>(it, activity.layoutInflater) }
             .also { fragments.addAll(it) }
 
-    fun setCurrentItem(item: Int, smoothScroll: Boolean = true) =
+    fun setCurrentItem(item: Int, smoothScroll: Boolean = true) {
         pager.setCurrentItem(item, smoothScroll)
+
+        onHeightChange?.also { listener ->
+            getActiveView<View>()
+                ?.calculatedHeight
+                ?.also { listener(it, smoothScroll) }
+        }
+    }
 
     var currentItem: Int
         get() = pager.currentItem
@@ -82,3 +91,4 @@ class FragmentPager(
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?) = viewInstance
     }
 }
+

@@ -24,6 +24,7 @@ class GridActivity : AppCompatActivity() {
 
     val levelPanel: LevelPanelView by lazy { findViewById(R.id.levelPanel) }
     private val pager: FragmentPager by lazy { findViewById(R.id.pager) }
+    private var savedHeight = 0
 
     companion object {
         private const val MAIN_VIEW_INDEX = 0
@@ -51,7 +52,7 @@ class GridActivity : AppCompatActivity() {
             runOnMainViews { newGame() }
         }
 
-        pager.onHeightChange = this::changeHeight
+        pager.onHeightChange = { height, animate -> changeHeight(height, animate) }
 
         onBackPressedDispatcher.addCallback(this,
             object : OnBackPressedCallback(true) {
@@ -69,11 +70,17 @@ class GridActivity : AppCompatActivity() {
         )
     }
 
-    fun changeHeight(height: Int, animate: Boolean = true) {
+    fun changeHeight(requestedHeight: Int = savedHeight, animate: Boolean = true, savePrevHeight: Boolean = false) {
+        if (savePrevHeight) {
+            savedHeight = pager.height
+        }
+
+        val height = requestedHeight.coerceAtLeast(savedHeight / 4 * 3)
         if (animate) {
             ResizeHeightAnimation(pager, height, 250, this@GridActivity::runOnUiThread)
                 .let { anim -> AnimationChain(pager).next { anim }}
                 .also(Animator::addAndStart)
+
         } else {
             runOnUiThread {
                 pager.layoutParams.height = height

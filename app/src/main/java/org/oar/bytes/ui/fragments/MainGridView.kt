@@ -49,8 +49,11 @@ class MainGridView(
         )
         pager.setCurrentItem(1, false)
 
-        findViewById<NavPanelView>(R.id.nav)
-            .onSettingsButtonClick = { switchView(1) }
+        findViewById<NavPanelView>(R.id.nav).apply {
+            onSettingsButtonClick = { switchView(1) }
+            onNextButtonClick = { activity.changeHeight(animate = true) }
+            onPrevButtonClick = { activity.changeHeight(this@MainGridView.calculatedHeight, true) }
+        }
 
         pager.getView<View>(1)?.apply {
             grid = findViewById(R.id.grid)
@@ -59,7 +62,7 @@ class MainGridView(
             listenNextLayoutChange { _, top, _, bottom ->
                 this@MainGridView.apply {
                     listenNextLayoutChange { _, _, _, _ ->
-                        activity.changeHeight(calculatedHeight, true)
+                        activity.changeHeight(calculatedHeight, true, true)
                     }
                 }
                 pager.layoutParams.height = bottom - top

@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'org.oar.bytes'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId "org.oar.bytes"
-        minSdk 30
-        targetSdk 32
+        minSdk 34
+        targetSdk 34
         versionCode 1
         versionName "1.0"
 

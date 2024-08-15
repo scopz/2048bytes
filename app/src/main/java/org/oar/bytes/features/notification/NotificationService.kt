@@ -16,6 +16,7 @@ import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import org.oar.bytes.features.notification.NotificationChannel.IDLE_ENDED
 import org.oar.bytes.features.notification.NotificationChannel.LEVEL_AVAILABLE
 import org.oar.bytes.features.notification.NotificationChannel.MAX_CAPACITY_REACHED
+import org.oar.bytes.utils.ComponentsExt.getService
 
 
 object NotificationService {
@@ -38,18 +39,16 @@ object NotificationService {
             PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
         ).apply(pendingIntents::add)
 
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        val alarmManager = getService<AlarmManager>(ALARM_SERVICE)
 
-        try {
+        if (alarmManager.canScheduleExactAlarms()) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerTime, scheduledIntent)
-        } catch(_: SecurityException) {
-
         }
     }
 
     fun Context.clearScheduledNotifications() {
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        val alarmManager = getService<AlarmManager>(ALARM_SERVICE)
+        val notificationManager = getService<NotificationManager>(NOTIFICATION_SERVICE)
 
         NotificationChannel.values().forEach {
             val intent = Intent(this, NotificationReceiver::class.java).apply {
@@ -71,7 +70,7 @@ object NotificationService {
 
     fun configureChannels(context: Context) {
         context.apply {
-            val notificationManager = getSystemService(NotificationManager::class.java)
+            val notificationManager = getService<NotificationManager>(NOTIFICATION_SERVICE)
 
             listOf(
                 createChannel(LEVEL_AVAILABLE),
@@ -111,14 +110,12 @@ object NotificationService {
 
     @SuppressLint("BatteryLife")
     private fun Context.prioritizeNotifications() {
-        val packageName = this.packageName
-        val powerManager = this.getSystemService(POWER_SERVICE) as PowerManager
+        val powerManager = getService<PowerManager>(POWER_SERVICE)
         if (!powerManager.isIgnoringBatteryOptimizations(packageName)) {
-            val intent = Intent().apply {
-                setAction(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
-                setData(Uri.parse("package:$packageName"))
-            }
-            this.startActivity(intent)
+            startActivity(
+                Intent(ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                    .apply { data = Uri.parse("package:$packageName") }
+            )
         }
     }
 }

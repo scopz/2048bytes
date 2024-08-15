@@ -5,18 +5,19 @@ import android.app.PendingIntent
 import android.app.TaskStackBuilder
 import android.content.BroadcastReceiver
 import android.content.Context
+import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import androidx.core.app.NotificationCompat
 import org.oar.bytes.R
 import org.oar.bytes.ui.InitActivity
+import org.oar.bytes.utils.ComponentsExt.getService
 import org.oar.bytes.utils.PreferencesExt.loadString
 import java.time.LocalDateTime
 
 class NotificationReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        val notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val notificationManager = context.getService<NotificationManager>(NOTIFICATION_SERVICE)
 
         val moment = intent.getLongExtra("moment", System.currentTimeMillis())
         val channel = intent.action
@@ -28,7 +29,7 @@ class NotificationReceiver : BroadcastReceiver() {
         val pendingIntent = TaskStackBuilder.create(context)
             .run {
                 addNextIntentWithParentStack(notificationIntent)
-                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT)
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
             }
 
         val channelId = if (mustBeSilent(context)) channel.silentId else channel.id

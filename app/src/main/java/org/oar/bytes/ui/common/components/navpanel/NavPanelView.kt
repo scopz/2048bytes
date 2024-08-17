@@ -39,4 +39,18 @@ class NavPanelView(
             onNextButtonClick?.let { it() }
         }
     }
+
+    fun hidePrevButton(){
+        findViewById<View>(R.id.prevButton).visibility = GONE
+        findViewById<View>(R.id.nextButton)
+            .let { it.layoutParams as MarginLayoutParams }
+            .marginStart = 0
+    }
+
+    fun hideNextButton(){
+        findViewById<View>(R.id.nextButton).visibility = GONE
+        findViewById<View>(R.id.prevButton)
+            .let { it.layoutParams as MarginLayoutParams }
+            .marginEnd = 0
+    }
 }

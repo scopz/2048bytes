@@ -1,12 +1,13 @@
 package org.oar.bytes.features.animate
 
+import android.os.Handler
+import android.os.HandlerThread
 import org.oar.bytes.utils.ListExt.syncAdd
 import org.oar.bytes.utils.ListExt.syncAny
 import org.oar.bytes.utils.ListExt.syncFilter
 import org.oar.bytes.utils.ListExt.syncRemoveIf
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 import java.util.function.BiConsumer
-import kotlin.math.roundToLong
 
 object Animator {
     const val END_ANIMATION = 1
@@ -94,7 +95,7 @@ object Animator {
         }
 
         thread?.apply {
-            interrupt()
+            quitSafely()
             thread = null
         }
     }
@@ -169,23 +170,33 @@ object Animator {
         }
     }
 
-    private class Framer : Thread() {
-        override fun run() {
-            val time = 1000 / FRAME_RATE
+    private class Framer : HandlerThread("animator") {
+        private val handler: Handler by lazy { Handler(looper) }
+        private val frameTime = (1000 / FRAME_RATE).toLong()
 
-            try {
-                while (animations.isNotEmpty()) {
-                    val initTime = System.nanoTime()
-                    update()
-                    val endTime = System.nanoTime()
+        override fun onLooperPrepared() {
+            handler.post(frameRunnable)
+        }
 
-                    val sleepTime = (time - (endTime - initTime) / 1000000).roundToLong()
-                    if (sleepTime > 0) {
-                        sleep(sleepTime)
-                    }
+        private val frameRunnable = object : Runnable {
+            override fun run() {
+                if (animations.isEmpty()) {
+                    quitSafely()
+                    thread = null
+                    return
                 }
-            } catch (_: InterruptedException) { }
-            thread = null
+
+                val startTime = System.nanoTime()
+                update()
+                val endTime = System.nanoTime()
+
+                val sleepTime = frameTime - (endTime - startTime) / 1_000_000
+                if (sleepTime > 0) {
+                    handler.postDelayed(this, sleepTime)
+                } else {
+                    handler.post(this)
+                }
+            }
         }
     }
 }

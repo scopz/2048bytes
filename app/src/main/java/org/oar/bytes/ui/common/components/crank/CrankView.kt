@@ -1,0 +1,83 @@
+package org.oar.bytes.ui.common.components.crank
+
+import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
+import android.util.AttributeSet
+import android.view.LayoutInflater
+import android.view.MotionEvent.ACTION_DOWN
+import android.view.MotionEvent.ACTION_MOVE
+import android.view.MotionEvent.ACTION_UP
+import android.widget.FrameLayout
+import android.widget.ImageView
+import org.oar.bytes.R
+import org.oar.bytes.features.animate.AnimationChain
+import org.oar.bytes.features.animate.Animator
+import org.oar.bytes.ui.animations.CrankAnimation
+import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
+import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
+import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
+import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
+import org.oar.bytes.utils.Data
+import org.oar.bytes.utils.NumbersExt.sByte
+import kotlin.math.min
+
+@SuppressLint("ClickableViewAccessibility")
+class CrankView(
+    context: Context,
+    attrs: AttributeSet? = null
+) : FrameLayout(context, attrs) {
+    private var anim: CrankAnimation
+
+    init {
+        LayoutInflater.from(context).inflate(R.layout.component_crank, this, true)
+
+        val crank = findViewById<ImageView>(R.id.crank)
+
+        context as Activity
+        anim = CrankAnimation(
+            this,
+            5f,
+            15f,
+            context::runOnUiThread
+        ).apply {
+            onAngleChange = { }
+            onCycle = {
+                Data.consumeBytes(
+                    (-1).sByte.double(Data.gameLevel-1)
+                )
+            }
+        }
+
+        crank.setOnTouchListener { _, event ->
+            when(event.action) {
+                ACTION_DOWN -> {
+                    when(anim.status) {
+                        STOPPED ->
+                            Animator.addAndStart(
+                                AnimationChain(crank).next { anim }
+                            )
+                        STOPPING,
+                        PRE_STOPPING -> anim.startAnimation()
+                        else -> Unit
+                    }
+                }
+                ACTION_MOVE -> {
+                    if (anim.status == POWERING) {
+                        val x = event.x
+                        val y = event.y
+                        if (min(x,y) < 0 || y > crank.height || x > crank.width) {
+                            anim.stop()
+                        }
+                    }
+                }
+                ACTION_UP -> {
+                    if (anim.status == POWERING) {
+                        anim.stop()
+                    }
+                }
+            }
+            true
+        }
+    }
+}

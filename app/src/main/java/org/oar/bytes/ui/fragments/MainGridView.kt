@@ -23,6 +23,8 @@ import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
+import org.oar.bytes.ui.fragments.MainView.MainDefinition.CRANK
+import org.oar.bytes.ui.fragments.MainView.MainDefinition.SETTINGS
 import org.oar.bytes.utils.ComponentsExt.calculatedHeight
 import org.oar.bytes.utils.NumbersExt.sByte
 
@@ -50,9 +52,10 @@ class MainGridView(
         pager.setCurrentItem(1, false)
 
         findViewById<NavPanelView>(R.id.nav).apply {
-            onSettingsButtonClick = { switchView(1) }
-            onNextButtonClick = { activity.changeHeight(animate = true) }
-            onPrevButtonClick = { activity.changeHeight(this@MainGridView.calculatedHeight, true) }
+            onSettingsButtonClick = { switchView(SETTINGS) }
+//            onNextButtonClick = { activity.changeHeight(animate = true) }
+            hideNextButton()
+            onPrevButtonClick = { switchView(CRANK) }
         }
 
         pager.getView<View>(1)?.apply {
@@ -193,6 +196,11 @@ class MainGridView(
         hintsPanel.setOnRemoveClickListener { on ->
             delayedHintAction(hintsPanel.remove, grid::removeTileHint, on)
         }
+    }
+
+    override fun onFocus() {
+        super.onFocus()
+        pager.currentItem = 1
     }
 
     override fun onBack(): Boolean {

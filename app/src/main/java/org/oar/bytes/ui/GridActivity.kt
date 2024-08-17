@@ -15,6 +15,7 @@ import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.ui.fragments.MainView
+import org.oar.bytes.ui.fragments.MainView.MainDefinition.MAIN
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.SaveStateExt.hasState
 import org.oar.bytes.utils.SaveStateExt.loadState
@@ -26,19 +27,19 @@ class GridActivity : AppCompatActivity() {
     private val pager: FragmentPager by lazy { findViewById(R.id.pager) }
     private var savedHeight = 0
 
-    companion object {
-        private const val MAIN_VIEW_INDEX = 0
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
         InitialLoad.loadData(this)
         setContentView(R.layout.activity_grid)
 
-        pager.setCurrentItem(MAIN_VIEW_INDEX, false)
+        pager.setCurrentItem(MAIN.ordinal, false)
         runOnMainViews {
-            switchView = this@GridActivity::switchView
+            switchView = {
+                pager.getActiveView<MainView>()?.onBlur()
+                pager.currentItem = it.ordinal
+                pager.getActiveView<MainView>()?.onFocus()
+            }
             onCreate()
         }
 
@@ -59,10 +60,12 @@ class GridActivity : AppCompatActivity() {
                 override fun handleOnBackPressed() {
                     val activeView = pager.getActiveView<MainView>()
                     if (activeView == null || activeView.onBack()) {
-                        if (pager.currentItem == MAIN_VIEW_INDEX) {
+                        if (pager.currentItem == MAIN.ordinal) {
                             finish()
                         } else {
-                            switchView(MAIN_VIEW_INDEX)
+                            pager.getActiveView<MainView>()?.onBlur()
+                            pager.currentItem = MAIN.ordinal
+                            pager.getActiveView<MainView>()?.onFocus()
                         }
                     }
                 }
@@ -118,10 +121,6 @@ class GridActivity : AppCompatActivity() {
             ?.onFocus()
 
         clearScheduledNotifications()
-    }
-
-    private fun switchView(item: Int) {
-        pager.currentItem = item
     }
 
     private fun reloadState(json: JSONObject) {

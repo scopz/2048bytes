@@ -14,8 +14,12 @@ abstract class MainView(
     @LayoutRes private val layoutId: Int
 ) : FrameLayout(context, attrs) {
 
+    enum class MainDefinition {
+        CRANK, MAIN, SETTINGS
+    }
+
     protected val activity = context as GridActivity
-    lateinit var switchView: (Int) -> Unit
+    lateinit var switchView: (MainDefinition) -> Unit
 
     init {
         inflate(context, layoutId, this)

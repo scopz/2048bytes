@@ -122,8 +122,8 @@ class HintButtonView(
     }
 
     private fun updateUi() {
-        progress = seconds.value / secondsToLoad.toFloat()
         runOnUiThread {
+            progress = seconds.value / secondsToLoad.toFloat()
             timeView.text = (secondsToLoad - seconds.value).toDynamicHHMMSS()
         }
     }

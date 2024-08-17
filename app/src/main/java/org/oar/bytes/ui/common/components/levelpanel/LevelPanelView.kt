@@ -59,7 +59,12 @@ class LevelPanelView(
     init {
         Data.getBytes = { storedValue.value }
         Data.consumeBytes = { bytes ->
-            if (storedValue.value >= bytes) {
+            if (bytes.isNegative) {
+                storedValue.operate {
+                    (it - bytes).coerceAtMost(capacity)
+                }
+                true
+            } else if (storedValue.value >= bytes) {
                 storedValue.value -= bytes
                 true
             } else false

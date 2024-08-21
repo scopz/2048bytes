@@ -12,6 +12,7 @@ import android.widget.ImageView
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
+import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.CrankAnimation
 import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
@@ -27,7 +28,9 @@ class CrankView(
     context: Context,
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
+
     private var anim: CrankAnimation
+    var onStatsChange: ((Float, Float, Float, SByte) -> Unit)? = null
 
     private var numbRotation: Float = 0f
         set(value) {
@@ -46,6 +49,8 @@ class CrankView(
             if (redraw) numbRotation = numbRotation
         }
 
+    private val bytesToAdd get() = 3.sByte.double(Data.gameLevel)
+
     init {
         LayoutInflater.from(context).inflate(R.layout.component_crank, this, true)
 
@@ -53,15 +58,13 @@ class CrankView(
 
         anim = CrankAnimation(
             this,
-            5f,
-            15f
+            2f,
+            2f
         ).apply {
-            onStatsChange = { angle, speed -> }
-            onCycle = {
-                Data.consumeBytes(
-                    (-1).sByte.double(Data.gameLevel+2)
-                )
+            onStatsChange = { angle, speed, mMaxSpeed ->
+                this@CrankView.onStatsChange?.let { it(angle, speed, mMaxSpeed, bytesToAdd) }
             }
+            onCycle = { Data.consumeBytes(-bytesToAdd) }
         }
 
         crank.setOnTouchListener { _, event ->

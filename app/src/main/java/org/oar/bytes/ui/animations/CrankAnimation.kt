@@ -6,15 +6,22 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
 import org.oar.bytes.ui.common.components.crank.CrankView
+import org.oar.bytes.utils.ScreenProperties
+import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 
+/**
+ * mSlowness: time to reach 1 speed
+ * mMaxSpeed: loops per second
+ */
 class CrankAnimation(
     private val mCrankView: CrankView,
     private val mSlowness: Float,
     private val mMaxSpeed: Float
 ) : Animation {
     companion object {
-        private const val MINIMUM_MAX_SPEED = 10f
+        private const val DECREASE_SLOWNESS = 2f
     }
+
     override val ref = mCrankView
     override val blockingGrid = false
 
@@ -28,14 +35,14 @@ class CrankAnimation(
         private set
 
     lateinit var onCycle: () -> Unit
-    lateinit var onStatsChange: (Float, Float) -> Unit
+    lateinit var onStatsChange: (Float, Float, Float) -> Unit
 
     override fun startAnimation() {
         startTime = when (status) {
             POWERING -> return
             STOPPED -> System.currentTimeMillis()
             else -> {
-                val seconds = (speed / mMaxSpeed) * mSlowness * 1000
+                val seconds = speed * mSlowness * 1000
                 System.currentTimeMillis() - seconds.toLong()
             }
         }
@@ -52,12 +59,12 @@ class CrankAnimation(
         return when (status) {
             POWERING -> {
                 val x = (System.currentTimeMillis() - startTime) / (mSlowness * 1000)
-                speed = (MINIMUM_MAX_SPEED * x).coerceAtMost(mMaxSpeed)
+                speed = x.coerceAtMost(mMaxSpeed)
                 true
             }
             STOPPING -> {
-                val x = (System.currentTimeMillis() - stopTime) / (mSlowness * 1000)
-                speed -= ((MINIMUM_MAX_SPEED * x) - brake).also { brake += it }
+                val x = (System.currentTimeMillis() - stopTime) / (DECREASE_SLOWNESS * 1000)
+                speed -= (x - brake).also { brake += it }
                 speed > 0
             }
             else -> false
@@ -73,12 +80,12 @@ class CrankAnimation(
     }
 
     override fun applyAnimation() {
-        mAngle += speed
+        mAngle += speed * 360f / FRAME_RATE
         while (mAngle >= 360) {
             onCycle()
             mAngle -= 360
         }
-        onStatsChange(mAngle, speed)
+        onStatsChange(mAngle, speed, mMaxSpeed)
         mCrankView.rotation = mAngle
     }
 

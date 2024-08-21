@@ -37,8 +37,8 @@ class ProgressBarView(
     private val capacityBar = Paint()
     private val levelBar = Paint()
 
-    private val storedTextView by lazy { findViewById<TextView>(R.id.stored) }
-    private val maxCapacityTextView by lazy { findViewById<TextView>(R.id.maxCapacity) }
+    private val storedTextView by lazy { findViewById<TextView>(R.id.mainText) }
+    private val maxCapacityTextView by lazy { findViewById<TextView>(R.id.secondaryText) }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_progress_bar, this, true)

@@ -4,28 +4,40 @@ import android.content.Context
 import android.util.AttributeSet
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.components.crank.CrankView
+import org.oar.bytes.ui.common.components.crankpower.CrankPowerView
 import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.MAIN
+import org.oar.bytes.utils.NumbersExt.sByte
 
 class MainCrankView(
     context: Context,
     attrs: AttributeSet? = null
 ) : MainView(context, attrs, R.layout.fragment_general_crank) {
 
+    private val crank by lazy { findViewById<CrankView>(R.id.crankView) }
+    private val crankPower by lazy { findViewById<CrankPowerView>(R.id.crankPower) }
+
     override fun onCreate() {
         findViewById<NavPanelView>(R.id.nav).apply {
             onNextButtonClick = { switchView(MAIN) }
             hidePrevButton()
         }
+
+        crank.onStatsChange = { _, speed, mMaxSpeed, bytes ->
+            val bytesPerSecond = bytes.value.toBigDecimal() * speed.toBigDecimal()
+            crankPower.setData("${bytesPerSecond.sByte}/s", speed / mMaxSpeed)
+        }
     }
 
     override fun onBlur() {
         super.onBlur()
-        findViewById<CrankView>(R.id.crankView).numb = true
+        crank.numb = true
+        crankPower.numb = true
     }
 
     override fun onFocus() {
         super.onFocus()
-        findViewById<CrankView>(R.id.crankView).numb = false
+        crank.numb = false
+        crankPower.numb = false
     }
 }

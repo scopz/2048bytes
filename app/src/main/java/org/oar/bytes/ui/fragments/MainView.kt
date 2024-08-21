@@ -3,16 +3,16 @@ package org.oar.bytes.ui.fragments
 import android.content.Context
 import android.util.AttributeSet
 import android.view.View
-import android.widget.FrameLayout
 import androidx.annotation.LayoutRes
 import org.json.JSONObject
 import org.oar.bytes.ui.GridActivity
+import org.oar.bytes.ui.common.pager.PageLayout
 
 abstract class MainView(
     context: Context,
     attrs: AttributeSet? = null,
     @LayoutRes private val layoutId: Int
-) : FrameLayout(context, attrs) {
+) : PageLayout(context, attrs) {
 
     enum class MainDefinition {
         CRANK, MAIN, SETTINGS
@@ -28,8 +28,6 @@ abstract class MainView(
     open fun onCreate() { }
     open fun onPause() { }
     open fun onResume() { }
-    open fun onFocus() { }
-    open fun onBlur() { }
     open fun onBack(): Boolean = true
 
     open fun newGame() { }

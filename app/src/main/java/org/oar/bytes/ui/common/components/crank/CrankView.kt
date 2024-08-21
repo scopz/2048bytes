@@ -1,7 +1,6 @@
 package org.oar.bytes.ui.common.components.crank
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -18,6 +17,7 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
+import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.NumbersExt.sByte
 import kotlin.math.min
@@ -29,22 +29,37 @@ class CrankView(
 ) : FrameLayout(context, attrs) {
     private var anim: CrankAnimation
 
+    private var numbRotation: Float = 0f
+        set(value) {
+            if (!numb) {
+                runOnUiThread {
+                    super.setRotation(value)
+                }
+            }
+            field = value
+        }
+
+    var numb = true
+        set(value) {
+            val redraw = field && !value
+            field = value
+            if (redraw) numbRotation = numbRotation
+        }
+
     init {
         LayoutInflater.from(context).inflate(R.layout.component_crank, this, true)
 
         val crank = findViewById<ImageView>(R.id.crank)
 
-        context as Activity
         anim = CrankAnimation(
             this,
             5f,
-            15f,
-            context::runOnUiThread
+            15f
         ).apply {
-            onAngleChange = { }
+            onStatsChange = { angle, speed -> }
             onCycle = {
                 Data.consumeBytes(
-                    (-1).sByte.double(Data.gameLevel-1)
+                    (-1).sByte.double(Data.gameLevel+2)
                 )
             }
         }
@@ -79,5 +94,9 @@ class CrankView(
             }
             true
         }
+    }
+
+    override fun setRotation(rotation: Float) {
+        numbRotation = rotation
     }
 }

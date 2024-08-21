@@ -35,11 +35,7 @@ class GridActivity : AppCompatActivity() {
 
         pager.setCurrentItem(MAIN.ordinal, false)
         runOnMainViews {
-            switchView = {
-                pager.getActiveView<MainView>()?.onBlur()
-                pager.currentItem = it.ordinal
-                pager.getActiveView<MainView>()?.onFocus()
-            }
+            switchView = { pager.currentItem = it.ordinal }
             onCreate()
         }
 
@@ -63,9 +59,7 @@ class GridActivity : AppCompatActivity() {
                         if (pager.currentItem == MAIN.ordinal) {
                             finish()
                         } else {
-                            pager.getActiveView<MainView>()?.onBlur()
                             pager.currentItem = MAIN.ordinal
-                            pager.getActiveView<MainView>()?.onFocus()
                         }
                     }
                 }

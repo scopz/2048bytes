@@ -15,6 +15,17 @@ class HintsView(
     attrs: AttributeSet? = null
 ) : FrameLayout(context, attrs) {
 
+    var numb = true
+        set(value) {
+            val changed = field != value
+            field = value
+            if (changed) {
+                if (!value) {
+                    hints.forEach { it.flushFinalSeconds() }
+                }
+            }
+        }
+
     private var onAddClickListener: Consumer<Boolean>? = null
     fun setOnAddClickListener(listener: Consumer<Boolean>) { onAddClickListener = listener }
 
@@ -88,7 +99,20 @@ class HintsView(
 
     private fun canActivate() = hints.none { it.active }
 
-    fun addFinalSeconds(seconds: Int) {
+    fun addSeconds(seconds: Int) {
+        if (numb) {
+            hints.forEach {
+                it.seconds.finalValue = (it.seconds.finalValue + seconds)
+                    .coerceAtMost(it.secondsToLoad)
+            }
+        } else {
+            hints.forEach {
+                it.addSeconds(seconds)
+            }
+        }
+    }
+
+    fun setFinalSeconds(seconds: Int) {
         hints.forEach {
             it.seconds.finalValue = (it.seconds.value + seconds)
                 .coerceAtMost(it.secondsToLoad)

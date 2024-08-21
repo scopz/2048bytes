@@ -2,7 +2,6 @@ package org.oar.bytes.ui.fragments
 
 import android.content.Context
 import android.util.AttributeSet
-import android.view.View
 import androidx.lifecycle.MutableLiveData
 import org.json.JSONObject
 import org.oar.bytes.R
@@ -23,6 +22,7 @@ import org.oar.bytes.ui.common.components.hints.HintsView
 import org.oar.bytes.ui.common.components.idlepanel.IdlePanelView
 import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.common.pager.FragmentPager
+import org.oar.bytes.ui.common.pager.PageLayout
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.CRANK
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.SETTINGS
 import org.oar.bytes.utils.ComponentsExt.calculatedHeight
@@ -49,7 +49,6 @@ class MainGridView(
             R.layout.fragment_grid,
             R.layout.fragment_speed_device
         )
-        pager.setCurrentItem(1, false)
 
         findViewById<NavPanelView>(R.id.nav).apply {
             onSettingsButtonClick = { switchView(SETTINGS) }
@@ -58,9 +57,11 @@ class MainGridView(
             onPrevButtonClick = { switchView(CRANK) }
         }
 
-        pager.getView<View>(1)?.apply {
+        pager.getView<PageLayout>(1)?.apply {
             grid = findViewById(R.id.grid)
             hintsPanel = findViewById(R.id.hintsPanel)
+
+            onFocusChange = { hintsPanel.numb = !(it && focused) }
 
             listenNextLayoutChange { _, top, _, bottom ->
                 this@MainGridView.apply {
@@ -72,7 +73,7 @@ class MainGridView(
             }
         }
 
-        pager.getView<View>(0)?.apply {
+        pager.getView<PageLayout>(0)?.apply {
             timeView = findViewById(R.id.energyDeviceList)
             timeView.setOnEnergyChangedListener { energy, jsonLoad ->
                 idlePanel.maxTime = energy
@@ -81,12 +82,13 @@ class MainGridView(
                 }
             }
         }
-        pager.getView<View>(2)?.apply {
+        pager.getView<PageLayout>(2)?.apply {
             speedView = findViewById(R.id.deviceList)
             speedView.setOnSpeedChangedListener {
                 idlePanel.bytesSec = it
             }
         }
+        pager.setCurrentItem(1, false)
 
         idlePanel.setOnClickTimeListener {
             pager.currentItem = if (pager.currentItem == 0) 1 else 0
@@ -101,7 +103,7 @@ class MainGridView(
                 levelPanel.storedValue.apply {
                     finalValue = value + bytes
                 }
-                hintsPanel.addFinalSeconds(secs)
+                hintsPanel.setFinalSeconds(secs)
 
                 Animator.addAndStart(listOf(
                     AnimationChain(idlePanel)
@@ -113,13 +115,13 @@ class MainGridView(
                 ))
             } else {
                 levelPanel.addBytes(bytes)
-                hintsPanel.hints.forEach { it.addSeconds(secs) }
+                hintsPanel.addSeconds(secs)
             }
         }
         grid.setOnProduceByteListener { values ->
             levelPanel.addBytes(values.mergedValue)
             val secondsToAdd = values.mergedLevels.sumOf { v -> v - 1 } * 12
-            hintsPanel.hints.forEach { it.addSeconds(secondsToAdd) }
+            hintsPanel.addSeconds(secondsToAdd)
         }
 
         grid.setOnGameOverListener {
@@ -200,7 +202,7 @@ class MainGridView(
 
     override fun onFocus() {
         super.onFocus()
-        pager.currentItem = 1
+        pager.setCurrentItem(1, false)
     }
 
     override fun onBack(): Boolean {

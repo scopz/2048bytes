@@ -6,13 +6,11 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
 import org.oar.bytes.ui.common.components.crank.CrankView
-import kotlin.reflect.KFunction1
 
 class CrankAnimation(
     private val mCrankView: CrankView,
     private val mSlowness: Float,
-    private val mMaxSpeed: Float,
-    private val runOnUiThread: KFunction1<Runnable, Unit>,
+    private val mMaxSpeed: Float
 ) : Animation {
     companion object {
         private const val MINIMUM_MAX_SPEED = 10f
@@ -30,7 +28,7 @@ class CrankAnimation(
         private set
 
     lateinit var onCycle: () -> Unit
-    lateinit var onAngleChange: (Float) -> Unit
+    lateinit var onStatsChange: (Float, Float) -> Unit
 
     override fun startAnimation() {
         startTime = when (status) {
@@ -80,10 +78,8 @@ class CrankAnimation(
             onCycle()
             mAngle -= 360
         }
-        onAngleChange(mAngle)
-        runOnUiThread {
-            mCrankView.rotation = mAngle
-        }
+        onStatsChange(mAngle, speed)
+        mCrankView.rotation = mAngle
     }
 
     fun stop() {

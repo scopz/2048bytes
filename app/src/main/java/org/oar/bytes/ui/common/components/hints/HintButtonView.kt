@@ -91,8 +91,15 @@ class HintButtonView(
         updateButtonBar()
     }
 
-    fun addSeconds(currentSeconds: Int, inAnimation: Boolean = false) {
-        seconds.operate(inAnimation) {
+    fun flushFinalSeconds() {
+        seconds.apply {
+            operate(true) { finalValue }
+            clearFinal()
+        }
+    }
+
+    fun addSeconds(currentSeconds: Int, ignoreFuture: Boolean = false) {
+        seconds.operate(ignoreFuture) {
             (currentSeconds + it).coerceAtMost(secondsToLoad)
         }
     }

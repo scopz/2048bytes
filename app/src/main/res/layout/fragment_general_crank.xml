@@ -5,6 +5,7 @@
     android:orientation="vertical">
 
     <org.oar.bytes.ui.common.components.crank.CrankView
+        android:id="@+id/crankView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 

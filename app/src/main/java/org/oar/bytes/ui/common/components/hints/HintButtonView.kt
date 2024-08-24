@@ -2,8 +2,6 @@ package org.oar.bytes.ui.common.components.hints
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ImageView
@@ -11,6 +9,8 @@ import android.widget.TextView
 import org.oar.bytes.R
 import org.oar.bytes.model.AnimatedValue
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
+import org.oar.bytes.utils.ColoredRect
+import org.oar.bytes.utils.ColoredRect.Companion.drawRect
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.NumbersExt.toDynamicHHMMSS
@@ -42,8 +42,7 @@ class HintButtonView(
             onValueChanged = { updateUi() }
         }
 
-    private val progressRect = Rect()
-    private val progressPaint = Paint()
+    private val progressRect = ColoredRect(context, this, R.color.hintsColor)
 
     private val imageView by lazy { findViewById<ImageView>(R.id.image) }
     private val timeView by lazy { findViewById<TextView>(R.id.time) }
@@ -81,8 +80,6 @@ class HintButtonView(
         progressRect.bottom = measuredHeight
         progressRect.right = measuredWidth
 
-        progressPaint.color = R.color.hintsColor.color(context)
-
         updateButtonBar()
     }
 
@@ -109,13 +106,13 @@ class HintButtonView(
     }
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawRect(progressRect, progressPaint)
+        canvas.drawRect(progressRect)
     }
 
     private fun updateButtonBar() {
         if (progress >= 1) {
             alpha = if (isEnabled) 1f else 0.5f
-            progressRect.top = measuredWidth
+            progressRect.percentBottomHeight = 0f
 
             if (!ready) {
                 ready = true
@@ -124,7 +121,7 @@ class HintButtonView(
         } else {
             ready = false
             alpha = .5f
-            progressRect.top = (measuredWidth * (1f-progress)).toInt()
+            progressRect.percentBottomHeight = progress
         }
     }
 

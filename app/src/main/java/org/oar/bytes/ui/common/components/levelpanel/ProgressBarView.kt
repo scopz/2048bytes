@@ -3,14 +3,14 @@ package org.oar.bytes.ui.common.components.levelpanel
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.TextView
 import org.oar.bytes.R
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
+import org.oar.bytes.utils.ColoredRect
+import org.oar.bytes.utils.ColoredRect.Companion.drawRect
 import org.oar.bytes.utils.NumbersExt.color
 
 class ProgressBarView(
@@ -21,21 +21,19 @@ class ProgressBarView(
     private var capacityProgress = 0f
         set(value) {
             field = value
-            capacityRect.right = (measuredWidth * value).toInt()
+            capacityRect.percentWidth = value
             postInvalidate()
         }
 
     private var levelProgress = 0f
         set(value) {
             field = value
-            levelRect.right = (measuredWidth * value).toInt()
+            levelRect.percentWidth = value
             postInvalidate()
         }
 
-    private val capacityRect = Rect()
-    private val levelRect = Rect()
-    private val capacityBar = Paint()
-    private val levelBar = Paint()
+    private val capacityRect = ColoredRect(context, this, R.color.capacityColor)
+    private val levelRect = ColoredRect(context, this, R.color.levelColor)
 
     private val storedTextView by lazy { findViewById<TextView>(R.id.mainText) }
     private val maxCapacityTextView by lazy { findViewById<TextView>(R.id.secondaryText) }
@@ -59,20 +57,16 @@ class ProgressBarView(
         super.onLayout(changed, left, top, right, bottom)
 
         levelRect.top = (bottom * 0.9f).toInt()
-
         capacityRect.bottom = bottom
         levelRect.bottom = bottom
 
-        capacityBar.color = R.color.capacityColor.color(context)
-        levelBar.color = R.color.levelColor.color(context)
-
-        if (capacityProgress > 0) capacityRect.right = (measuredWidth * capacityProgress).toInt()
-        if (levelProgress > 0) levelRect.right = (measuredWidth * levelProgress).toInt()
+        if (capacityProgress > 0) capacityRect.percentWidth = capacityProgress
+        if (levelProgress > 0) levelRect.percentWidth = levelProgress
     }
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
-        canvas.drawRect(capacityRect, capacityBar)
-        canvas.drawRect(levelRect, levelBar)
+        canvas.drawRect(capacityRect)
+        canvas.drawRect(levelRect)
     }
 }

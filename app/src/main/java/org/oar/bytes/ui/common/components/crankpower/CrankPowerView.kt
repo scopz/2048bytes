@@ -3,13 +3,13 @@ package org.oar.bytes.ui.common.components.crankpower
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Paint
-import android.graphics.Rect
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.TextView
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
+import org.oar.bytes.utils.ColoredRect
+import org.oar.bytes.utils.ColoredRect.Companion.drawRect
 import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.NumbersExt.color
 
@@ -30,12 +30,11 @@ class CrankPowerView(
     private var label = 0f
         set(value) {
             field = value
-            progressRect.right = (measuredWidth * value).toInt()
+            progressRect.percentWidth = value
             postInvalidate()
         }
 
-    private val progressRect = Rect()
-    private val progressBar = Paint()
+    private val progressRect = ColoredRect(context, this, R.color.crankColor)
 
     private val textView by lazy { findViewById<TextView>(R.id.mainText) }
 
@@ -48,11 +47,8 @@ class CrankPowerView(
 
     override fun onLayout(changed: Boolean, left: Int, top: Int, right: Int, bottom: Int) {
         super.onLayout(changed, left, top, right, bottom)
-
         progressRect.bottom = bottom
-        progressBar.color = R.color.crankColor.color(context)
-
-        if (label > 0) progressRect.right = (measuredWidth * label).toInt()
+        if (label > 0) progressRect.percentWidth = label
     }
 
     fun setData(text: String, percent: Float) {
@@ -68,6 +64,6 @@ class CrankPowerView(
 
     @SuppressLint("DrawAllocation")
     override fun onDraw(canvas: Canvas) {
-        canvas.drawRect(progressRect, progressBar)
+        canvas.drawRect(progressRect)
     }
 }

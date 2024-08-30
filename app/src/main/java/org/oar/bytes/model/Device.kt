@@ -1,6 +1,6 @@
 package org.oar.bytes.model
 
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import kotlin.math.pow
 
 data class Device(

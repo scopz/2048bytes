@@ -2,11 +2,11 @@ package org.oar.bytes.features.animate
 
 import android.os.Handler
 import android.os.HandlerThread
-import org.oar.bytes.utils.ListExt.syncAdd
-import org.oar.bytes.utils.ListExt.syncAny
-import org.oar.bytes.utils.ListExt.syncFilter
-import org.oar.bytes.utils.ListExt.syncRemoveIf
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
+import org.oar.bytes.utils.extensions.ListExt.syncAdd
+import org.oar.bytes.utils.extensions.ListExt.syncAny
+import org.oar.bytes.utils.extensions.ListExt.syncFilter
+import org.oar.bytes.utils.extensions.ListExt.syncRemoveIf
 import java.util.function.BiConsumer
 
 object Animator {

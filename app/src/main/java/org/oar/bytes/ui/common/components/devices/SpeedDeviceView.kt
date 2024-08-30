@@ -13,10 +13,10 @@ import org.oar.bytes.databinding.ComponentDeviceBinding
 import org.oar.bytes.model.Device
 import org.oar.bytes.model.SByte
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.JsonExt.getJSONArrayOrNull
-import org.oar.bytes.utils.JsonExt.jsonArray
-import org.oar.bytes.utils.JsonExt.mapJsonObject
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.JsonExt.getJSONArrayOrNull
+import org.oar.bytes.utils.extensions.JsonExt.jsonArray
+import org.oar.bytes.utils.extensions.JsonExt.mapJsonObject
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import java.util.function.Consumer
 
 class SpeedDeviceView(

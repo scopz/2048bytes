@@ -7,7 +7,7 @@ import org.oar.bytes.ui.common.components.crank.CrankView
 import org.oar.bytes.ui.common.components.crankpower.CrankPowerView
 import org.oar.bytes.ui.common.components.navpanel.NavPanelView
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.MAIN
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 
 class MainCrankView(
     context: Context,

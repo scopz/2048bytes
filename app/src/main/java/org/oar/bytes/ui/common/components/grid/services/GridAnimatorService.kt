@@ -9,11 +9,10 @@ import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
-import org.oar.bytes.utils.ListExt.active
-import org.oar.bytes.utils.ListExt.asyncAdd
-import org.oar.bytes.utils.ListExt.asyncRemove
-import org.oar.bytes.utils.ListExt.findByPosition
-import org.oar.bytes.utils.ListExt.syncRemove
+import org.oar.bytes.utils.extensions.ListExt.active
+import org.oar.bytes.utils.extensions.ListExt.asyncAdd
+import org.oar.bytes.utils.extensions.ListExt.asyncRemove
+import org.oar.bytes.utils.extensions.ListExt.findByPosition
 
 class GridAnimatorService(
     val parent: View

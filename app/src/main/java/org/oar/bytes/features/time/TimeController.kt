@@ -3,11 +3,11 @@ package org.oar.bytes.features.time
 import android.content.Context
 import org.json.JSONArray
 import org.json.JSONObject
-import org.oar.bytes.utils.JsonExt.getJSONArrayOrNull
-import org.oar.bytes.utils.JsonExt.getLongOrNull
-import org.oar.bytes.utils.JsonExt.jsonArray
-import org.oar.bytes.utils.JsonExt.map
 import org.oar.bytes.utils.Utils.hashOf
+import org.oar.bytes.utils.extensions.JsonExt.getJSONArrayOrNull
+import org.oar.bytes.utils.extensions.JsonExt.getLongOrNull
+import org.oar.bytes.utils.extensions.JsonExt.jsonArray
+import org.oar.bytes.utils.extensions.JsonExt.map
 import java.util.concurrent.ConcurrentHashMap
 
 object TimeController {

@@ -2,6 +2,7 @@ package org.oar.bytes.ui.fragments
 
 import android.content.Context
 import android.util.AttributeSet
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.MutableLiveData
 import org.json.JSONObject
 import org.oar.bytes.R
@@ -25,8 +26,9 @@ import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.ui.common.pager.PageLayout
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.CRANK
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.SETTINGS
-import org.oar.bytes.utils.ComponentsExt.calculatedHeight
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.Data
+import org.oar.bytes.utils.extensions.ComponentsExt.calculatedHeight
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 
 class MainGridView(
     context: Context,
@@ -98,9 +100,9 @@ class MainGridView(
             pager.currentItem = if (pager.currentItem == 2) 1 else 2
         }
 
-        idlePanel.setOnProduceByteListener { secs, bytes, animate ->
+        idlePanel.onProduceByteListener = { secs, bytes, animate ->
             if (animate) {
-                levelPanel.storedValue.apply {
+                Data.bytes.apply {
                     finalValue = value + bytes
                 }
                 hintsPanel.setFinalSeconds(secs)
@@ -114,12 +116,14 @@ class MainGridView(
                         .next { HintsProgressAnimation(hintsPanel, secs, 1000) }
                 ))
             } else {
-                levelPanel.addBytes(bytes)
+                if (bytes.isBiggerThanZero) {
+                    Data.bytes.operate { it + bytes }
+                }
                 hintsPanel.addSeconds(secs)
             }
         }
         grid.setOnProduceByteListener { values ->
-            levelPanel.addBytes(values.mergedValue)
+            Data.bytes.operate { it + values.mergedValue }
             val secondsToAdd = values.mergedLevels.sumOf { v -> v - 1 } * 12
             hintsPanel.addSeconds(secondsToAdd)
         }
@@ -132,18 +136,18 @@ class MainGridView(
         grid.setOnLongClickListener {
             ConfirmDialog.show(context, R.string.title_confirm, R.string.restart_confirm, {
                 Animator.stopAll()
-                levelPanel.storedValue.value = 0.sByte
+                Data.bytes.value = 0.sByte
                 grid.restart()
             })
             true
         }
 
         // TODO: Move to GridActivity somehow
-        levelPanel.setLevelUpListener {
+        Data.gameLevel.observe(context as LifecycleOwner) {
             grid.advancedGridLevel()
         }
 
-        levelPanel.setOnCapacityReachedListener {
+        levelPanel.onCapacityReachedListener = {
             grid.paused = it
         }
 
@@ -249,7 +253,7 @@ class MainGridView(
         val bytesPerSecond = idlePanel.bytesSec
         if (!bytesPerSecond.isBiggerThanZero) return
 
-        val pendingBytesToCap = levelPanel.capacity - levelPanel.storedValue.value
+        val pendingBytesToCap = Data.capacity.value - Data.bytes.value
         if (pendingBytesToCap.isBiggerThanZero) {
             val secondsToCap = (pendingBytesToCap/bytesPerSecond).value.toInt()
             if (secondsToCap < idlePanel.currentTime) {
@@ -257,7 +261,7 @@ class MainGridView(
             }
         }
 
-        val pendingBytesToLevel = levelPanel.toLevel - levelPanel.storedValue.value
+        val pendingBytesToLevel = levelPanel.expRequired - Data.bytes.value
         if (pendingBytesToLevel <= pendingBytesToCap && pendingBytesToLevel.isBiggerThanZero) {
             val secondsToLevel = (pendingBytesToLevel/bytesPerSecond).value.toInt()
             if (secondsToLevel < idlePanel.currentTime) {

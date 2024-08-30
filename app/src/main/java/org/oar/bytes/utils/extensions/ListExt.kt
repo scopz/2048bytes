@@ -1,4 +1,4 @@
-package org.oar.bytes.utils
+package org.oar.bytes.utils.extensions
 
 import org.oar.bytes.model.Position
 import org.oar.bytes.ui.common.components.grid.GridTile

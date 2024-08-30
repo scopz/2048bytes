@@ -12,11 +12,11 @@ import org.oar.bytes.R
 import org.oar.bytes.databinding.ComponentEnergyDeviceBinding
 import org.oar.bytes.model.EnergyDevice
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.JsonExt.getJSONArrayOrNull
-import org.oar.bytes.utils.JsonExt.jsonArray
-import org.oar.bytes.utils.JsonExt.mapJsonObject
-import org.oar.bytes.utils.NumbersExt.toHHMMSS
-import org.oar.bytes.utils.NumbersExt.toMins
+import org.oar.bytes.utils.extensions.JsonExt.getJSONArrayOrNull
+import org.oar.bytes.utils.extensions.JsonExt.jsonArray
+import org.oar.bytes.utils.extensions.JsonExt.mapJsonObject
+import org.oar.bytes.utils.extensions.NumbersExt.toHHMMSS
+import org.oar.bytes.utils.extensions.NumbersExt.toMins
 import java.util.function.BiConsumer
 
 class TimeEnergyView(

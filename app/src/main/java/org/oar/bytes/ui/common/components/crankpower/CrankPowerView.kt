@@ -10,8 +10,8 @@ import org.oar.bytes.R
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.ColoredRect
 import org.oar.bytes.utils.ColoredRect.Companion.drawRect
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
-import org.oar.bytes.utils.NumbersExt.color
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.NumbersExt.color
 
 class CrankPowerView(
     context: Context,

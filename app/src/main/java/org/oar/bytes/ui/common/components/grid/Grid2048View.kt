@@ -22,24 +22,24 @@ import org.oar.bytes.ui.common.components.grid.services.GridAnimatorService
 import org.oar.bytes.ui.common.components.grid.services.GridStepsGeneratorService
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService
 import org.oar.bytes.ui.common.components.grid.services.GridTouchControlService.Action.*
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.JsonExt.jsonArray
-import org.oar.bytes.utils.JsonExt.map
-import org.oar.bytes.utils.JsonExt.mapJsonArray
-import org.oar.bytes.utils.JsonExt.mapJsonObject
-import org.oar.bytes.utils.ListExt.active
-import org.oar.bytes.utils.ListExt.findActiveByPosition
-import org.oar.bytes.utils.ListExt.findByPosition
-import org.oar.bytes.utils.ListExt.syncAdd
-import org.oar.bytes.utils.ListExt.syncAddAll
-import org.oar.bytes.utils.ListExt.syncClear
-import org.oar.bytes.utils.ListExt.syncForEach
-import org.oar.bytes.utils.ListExt.syncRemove
-import org.oar.bytes.utils.ListExt.syncReplaceAll
-import org.oar.bytes.utils.NumbersExt.color
-import org.oar.bytes.utils.NumbersExt.sByte
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.JsonExt.jsonArray
+import org.oar.bytes.utils.extensions.JsonExt.map
+import org.oar.bytes.utils.extensions.JsonExt.mapJsonArray
+import org.oar.bytes.utils.extensions.JsonExt.mapJsonObject
+import org.oar.bytes.utils.extensions.ListExt.active
+import org.oar.bytes.utils.extensions.ListExt.findActiveByPosition
+import org.oar.bytes.utils.extensions.ListExt.findByPosition
+import org.oar.bytes.utils.extensions.ListExt.syncAdd
+import org.oar.bytes.utils.extensions.ListExt.syncAddAll
+import org.oar.bytes.utils.extensions.ListExt.syncClear
+import org.oar.bytes.utils.extensions.ListExt.syncForEach
+import org.oar.bytes.utils.extensions.ListExt.syncRemove
+import org.oar.bytes.utils.extensions.ListExt.syncReplaceAll
+import org.oar.bytes.utils.extensions.NumbersExt.color
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import java.util.*
 import java.util.function.Consumer
 
@@ -49,8 +49,9 @@ class Grid2048View(
 ) : LimitedDrawView(context, attrs) {
 
     private val baseByteValue
-        get() = 1.sByte.double(Data.gameLevel-1)
+        get() = 1.sByte.double(Data.gameLevel.value-1)
 
+    private var currentGameLevel: Int = 1
     private var tileSize: Int = 0
     private val tiles = mutableListOf<GridTile>()
 
@@ -112,6 +113,9 @@ class Grid2048View(
     }
 
     fun advancedGridLevel() {
+        if (Data.gameLevel.value <= currentGameLevel)
+            return
+
         tiles.active
             .map {
                 if (it.level == 1) it.advancedGridLevel()
@@ -121,6 +125,7 @@ class Grid2048View(
             .also { Animator.addAndStart(it) }
         lastSpawn.clear()
         lastSteps.clear()
+        currentGameLevel = Data.gameLevel.value
     }
 
     fun appendToJson(json: JSONObject) {
@@ -147,6 +152,7 @@ class Grid2048View(
 
     fun fromJson(json: JSONObject) {
         val baseByte = baseByteValue
+        currentGameLevel = Data.gameLevel.value
 
         tiles.syncClear()
         json.getJSONArray("tiles")

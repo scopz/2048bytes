@@ -6,7 +6,6 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
 import org.oar.bytes.ui.common.components.crank.CrankView
-import org.oar.bytes.utils.ScreenProperties
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 
 /**
@@ -19,7 +18,7 @@ class CrankAnimation(
     private val mMaxSpeed: Float
 ) : Animation {
     companion object {
-        private const val DECREASE_SLOWNESS = 2f
+        private const val DECREASE_SLOWNESS = 6.5f
     }
 
     override val ref = mCrankView

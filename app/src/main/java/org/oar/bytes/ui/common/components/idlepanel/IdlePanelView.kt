@@ -12,12 +12,11 @@ import org.oar.bytes.R
 import org.oar.bytes.features.time.TimeControlled
 import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.model.SByte
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Constants.SPEED_TIME_REGENERATE
-import org.oar.bytes.utils.JsonExt.getIntOrNull
-import org.oar.bytes.utils.NumbersExt.sByte
-import org.oar.bytes.utils.NumbersExt.toHHMMSS
-import org.oar.bytes.utils.TriConsumer
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.JsonExt.getIntOrNull
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.NumbersExt.toHHMMSS
 
 class IdlePanelView(
     context: Context,
@@ -50,8 +49,7 @@ class IdlePanelView(
     private var onClickSpeedListener: OnClickListener? = null
     fun setOnClickSpeedListener(listener: OnClickListener) { onClickSpeedListener = listener }
 
-    private var onProduceByteListener: TriConsumer<Int, SByte, Boolean>? = null
-    fun setOnProduceByteListener(listener: TriConsumer<Int, SByte, Boolean>) { onProduceByteListener = listener }
+    var onProduceByteListener: ((Int, SByte, Boolean) -> Unit)? = null
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_idle_panel, this, true)
@@ -73,7 +71,7 @@ class IdlePanelView(
     ): Boolean {
         val secs = (timePassed / 1000).toInt().coerceAtMost(currentTime)
         currentTime -= secs
-        onProduceByteListener?.accept(secs, bytesSec * secs.sByte, true)
+        onProduceByteListener?.let { it(secs, bytesSec * secs.sByte, true) }
         return true
     }
 
@@ -113,7 +111,7 @@ class IdlePanelView(
                 while (onGoing) {
                     val initTime = System.nanoTime()
                     runOnUiThread {
-                        onProduceByteListener?.accept(1, bytesSec, false)
+                        onProduceByteListener?.let { it(1, bytesSec, false) }
                     }
                     val endTime = System.nanoTime()
 

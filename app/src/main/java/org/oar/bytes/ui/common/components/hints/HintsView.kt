@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import org.json.JSONObject
 import org.oar.bytes.R
-import org.oar.bytes.utils.JsonExt.getJSONArrayOrNull
-import org.oar.bytes.utils.JsonExt.jsonArray
+import org.oar.bytes.utils.extensions.JsonExt.getJSONArrayOrNull
+import org.oar.bytes.utils.extensions.JsonExt.jsonArray
 import java.util.function.Consumer
 
 class HintsView(

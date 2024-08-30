@@ -6,7 +6,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.view.View
 import androidx.annotation.ColorRes
-import org.oar.bytes.utils.NumbersExt.color
+import org.oar.bytes.utils.extensions.NumbersExt.color
 
 class ColoredRect(
     private val context: Context,

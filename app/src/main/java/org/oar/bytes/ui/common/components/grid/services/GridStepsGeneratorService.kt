@@ -8,9 +8,9 @@ import org.oar.bytes.ui.common.components.grid.GridTile
 import org.oar.bytes.ui.common.components.grid.model.StepAction
 import org.oar.bytes.ui.common.components.grid.model.StepMerge
 import org.oar.bytes.ui.common.components.grid.model.StepMove
-import org.oar.bytes.utils.ListExt.findActiveByPosition
-import org.oar.bytes.utils.ListExt.syncAssociateWith
-import org.oar.bytes.utils.ListExt.syncMap
+import org.oar.bytes.utils.extensions.ListExt.findActiveByPosition
+import org.oar.bytes.utils.extensions.ListExt.syncAssociateWith
+import org.oar.bytes.utils.extensions.ListExt.syncMap
 
 class GridStepsGeneratorService(
     val parent: View

@@ -1,7 +1,7 @@
 package org.oar.bytes.utils
 
 import android.graphics.Color
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import java.math.BigDecimal
 
 object Constants {

@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
 import androidx.viewpager2.widget.ViewPager2
-import org.oar.bytes.utils.ComponentsExt.calculatedHeight
+import org.oar.bytes.utils.extensions.ComponentsExt.calculatedHeight
 
 @Suppress("UNCHECKED_CAST")
 class FragmentPager(

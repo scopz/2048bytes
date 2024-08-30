@@ -6,16 +6,14 @@ import android.view.LayoutInflater
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
 import org.json.JSONObject
 import org.oar.bytes.R
-import org.oar.bytes.model.AnimatedValue
 import org.oar.bytes.model.SByte
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.NumbersExt.color
-import org.oar.bytes.utils.NumbersExt.sByte
-import java.util.function.Consumer
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.NumbersExt.color
 
 class LevelPanelView(
     context: Context,
@@ -27,117 +25,84 @@ class LevelPanelView(
 
     private val progressBar by lazy { findViewById<ProgressBarView>(R.id.progressBar) }
 
-    var capacity = 256.sByte
+    var expRequired: SByte
+        get() = Constants.LEVEL_EXP[Data.gameLevel.value - 1]
         private set(value) {
-            field = value
-            progressBar.setCapacityProgress(storedValue.value, capacity)
-        }
-
-    var toLevel: SByte
-        get() = Constants.LEVEL_EXP[Data.gameLevel - 1]
-        private set(value) {
-            progressBar.setLevelProgress(storedValue.value, value)
-        }
-
-    val storedValue = AnimatedValue(0.sByte)
-        .apply {
-            onValueChanged = { updateUi() }
+            progressBar.setLevelProgress(Data.bytes.value, value)
         }
 
     // listeners
-    private var onLevelUpListener: Consumer<Int>? = null
-    fun setLevelUpListener(listener: Consumer<Int>) { onLevelUpListener = listener }
-
     private var newLevelReached = false
-    private var onNewLevelReachedListener: Consumer<Boolean>? = null
-    fun setOnNewLevelReachedListener(listener: Consumer<Boolean>) { onNewLevelReachedListener = listener }
+    var onNewLevelReachedListener: ((Boolean) -> Unit)? = null
+    var onNewLevelButtonClickListener: (() -> Unit)? = null
 
     private var capacityReached = false
-    private var onCapacityReachedListener: Consumer<Boolean>? = null
-    fun setOnCapacityReachedListener(listener: Consumer<Boolean>) { onCapacityReachedListener = listener }
+    var onCapacityReachedListener: ((Boolean) -> Unit)? = null
+    var onCapacityButtonClickListener: (() -> Unit)? = null
 
     init {
-        Data.getBytes = { storedValue.value }
-        Data.consumeBytes = { bytes ->
-            if (bytes.isNegative) {
-                storedValue.operate {
-                    (it - bytes).coerceAtMost(capacity)
-                }
-                true
-            } else if (storedValue.value >= bytes) {
-                storedValue.value -= bytes
-                true
-            } else false
+        Data.bytes.observe(context as LifecycleOwner) {
+            updateUi()
+        }
+        Data.capacity.observe(context) {
+            if (capacityReached) {
+                capacityReached = false
+                onCapacityReachedListener?.let { it(false) }
+            }
+            runOnUiThread {
+                progressBar.setCapacityProgress(Data.bytes.value, it)
+            }
+        }
+        Data.gameLevel.observe(context) {
+            if (newLevelReached && Data.bytes.value < expRequired) {
+                newLevelReached = false
+                onNewLevelReachedListener?.let { it(false) }
+            }
+            runOnUiThread {
+                levelUpButton.text = it.toString()
+            }
         }
 
         LayoutInflater.from(context).inflate(R.layout.component_level_panel, this, true)
 
         findViewById<TextView>(R.id.levelUpButton).setOnClickListener {
-            if (storedValue.value >= toLevel) {
-                val expRequired = toLevel
-                Data.gameLevel++
-                storedValue.value -= expRequired
-                levelUpButton.text = Data.gameLevel.toString()
-                onLevelUpListener?.accept(Data.gameLevel)
-
-                if (storedValue.value < toLevel) {
-                    newLevelReached = false
-                    onNewLevelReachedListener?.accept(false)
-                }
-            }
+            onNewLevelButtonClickListener?.let { it() }
         }
 
         capacityUpButton.setOnClickListener {
-            capacity += storedValue.value
-            storedValue.value = 0.sByte
-            capacityReached = false
-            onCapacityReachedListener?.accept(false)
+            onCapacityButtonClickListener?.let { it() }
         }
 
-        levelUpButton.text = Data.gameLevel.toString()
-    }
-
-    fun addBytes(value: SByte, inAnimation: Boolean = false) {
-        if (value.isZero) return
-        storedValue.operate(inAnimation) {
-            (it + value).coerceAtMost(capacity)
-        }
-    }
-
-    fun appendToJson(json: JSONObject) {
-        json.apply {
-            put("storedValue", storedValue.finalValue.value.toString())
-            put("capacity", capacity.value.toString())
-        }
+        levelUpButton.text = Data.gameLevel.value.toString()
     }
 
     private fun updateUi() {
         val levelUpBackgroundEdit =
-            if (storedValue.value >= toLevel) {
+            if (Data.bytes.value >= expRequired) {
                 if (!newLevelReached) true
                 else null
             } else if (newLevelReached) false
             else null
 
-        levelUpBackgroundEdit?.let {
-            newLevelReached = it
-            onNewLevelReachedListener?.accept(it)
+        levelUpBackgroundEdit?.let { value ->
+            newLevelReached = value
+            onNewLevelReachedListener?.let { it(value) }
         }
 
-        val capacityBackgroundEdit = if (storedValue.value >= capacity) {
+        val capacityBackgroundEdit = if (Data.bytes.value >= Data.capacity.value) {
                 if (!capacityReached) true
                 else null
             } else if (capacityReached) false
             else null
 
-        capacityBackgroundEdit?.let {
-            capacityReached = it
-            onCapacityReachedListener?.accept(it)
+        capacityBackgroundEdit?.let { value ->
+            capacityReached = value
+            onCapacityReachedListener?.let { it(value) }
         }
 
         runOnUiThread {
-            progressBar.setCapacityProgress(storedValue.value, capacity)
-            progressBar.setLevelProgress(storedValue.value, toLevel)
+            progressBar.setCapacityProgress(Data.bytes.value, Data.capacity.value)
+            progressBar.setLevelProgress(Data.bytes.value, expRequired)
 
             levelUpBackgroundEdit
                 ?.let { if (it) R.color.levelColor else R.color.itemDefaultBackground }
@@ -151,9 +116,11 @@ class LevelPanelView(
         }
     }
 
+    fun appendToJson(json: JSONObject) { }
+
     fun fromJson(json: JSONObject) {
-        capacity = json.getString("capacity").sByte
-        storedValue.value = json.getString("storedValue").sByte
-        levelUpButton.text = Data.gameLevel.toString()
+        runOnUiThread {
+            levelUpButton.text = Data.gameLevel.value.toString()
+        }
     }
 }

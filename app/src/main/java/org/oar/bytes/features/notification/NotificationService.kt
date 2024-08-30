@@ -16,7 +16,7 @@ import android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
 import org.oar.bytes.features.notification.NotificationChannel.IDLE_ENDED
 import org.oar.bytes.features.notification.NotificationChannel.LEVEL_AVAILABLE
 import org.oar.bytes.features.notification.NotificationChannel.MAX_CAPACITY_REACHED
-import org.oar.bytes.utils.ComponentsExt.getService
+import org.oar.bytes.utils.extensions.ComponentsExt.getService
 
 
 object NotificationService {

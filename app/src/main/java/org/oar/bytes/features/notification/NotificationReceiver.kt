@@ -10,8 +10,8 @@ import android.content.Intent
 import androidx.core.app.NotificationCompat
 import org.oar.bytes.R
 import org.oar.bytes.ui.InitActivity
-import org.oar.bytes.utils.ComponentsExt.getService
-import org.oar.bytes.utils.PreferencesExt.loadString
+import org.oar.bytes.utils.extensions.ComponentsExt.getService
+import org.oar.bytes.utils.extensions.PreferencesExt.loadString
 import java.time.LocalDateTime
 
 class NotificationReceiver : BroadcastReceiver() {

@@ -3,7 +3,8 @@ package org.oar.bytes.ui.animations
 import org.oar.bytes.features.animate.Animation
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.Data
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import kotlin.math.PI
 import kotlin.math.sin
 
@@ -15,8 +16,8 @@ class LevelProgressAnimation(
     override val ref = panelView
     override val blockingGrid = false
 
-    private val initValue = panelView.storedValue.value
-    private val diff = (bytesToAdd + initValue).coerceAtMost(panelView.capacity) - initValue
+    private val initValue = Data.bytes.value
+    private val diff = (bytesToAdd + initValue).coerceAtMost(Data.capacity.value) - initValue
     private var added = 0.sByte
 
     private var startTime = 0L
@@ -39,14 +40,14 @@ class LevelProgressAnimation(
         val diffPart = diff.value.toBigDecimal().multiply(nx).sByte - added
         added += diffPart
 
-        panelView.addBytes(diffPart, true)
+        Data.bytes.value += diffPart
         return true
     }
 
     override fun applyAnimation() {}
 
     override fun endAnimation() {
-        panelView.addBytes(diff - added, true)
-        panelView.storedValue.clearFinal()
+        Data.bytes.value += diff - added
+        Data.bytes.clearFinal()
     }
 }

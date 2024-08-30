@@ -1,11 +1,11 @@
 package org.oar.bytes.model
 
 import org.oar.bytes.utils.Constants.SCALE_BYTE_LETTER
-import org.oar.bytes.utils.NumbersExt.canReduceScale
-import org.oar.bytes.utils.NumbersExt.doubleValue
-import org.oar.bytes.utils.NumbersExt.halveValue
-import org.oar.bytes.utils.NumbersExt.reduceScale
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.NumbersExt.canReduceScale
+import org.oar.bytes.utils.extensions.NumbersExt.doubleValue
+import org.oar.bytes.utils.extensions.NumbersExt.halveValue
+import org.oar.bytes.utils.extensions.NumbersExt.reduceScale
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import java.math.BigInteger
 import java.math.RoundingMode
 import java.text.DecimalFormat
@@ -15,6 +15,7 @@ data class SByte (
 ): Cloneable {
 
     companion object {
+        val ZERO = 0.sByte
         val decimalFormat = DecimalFormat("0.##").apply {
             roundingMode = RoundingMode.HALF_UP
         }
@@ -89,5 +90,7 @@ data class SByte (
     operator fun times(byte: SByte) = SByte(value.multiply(byte.value))
     operator fun div(byte: SByte) = SByte(value.divide(byte.value))
     operator fun compareTo(byte: SByte) = value.compareTo(byte.value)
+    operator fun compareTo(value: BigInteger) = this.value.compareTo(value)
     fun coerceAtMost(other: SByte) = value.coerceAtMost(other.value).sByte
+    fun coerceIn(minimumValue: SByte, maximumValue: SByte) = value.coerceIn(minimumValue.value, maximumValue.value).sByte
 }

@@ -1,4 +1,4 @@
-package org.oar.bytes.utils
+package org.oar.bytes.utils.extensions
 
 import org.json.JSONArray
 import org.json.JSONObject

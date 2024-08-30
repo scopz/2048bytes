@@ -6,14 +6,15 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.lifecycle.LifecycleOwner
 import org.oar.bytes.R
-import org.oar.bytes.model.AnimatedValue
+import org.oar.bytes.model.UiValue
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.ColoredRect
 import org.oar.bytes.utils.ColoredRect.Companion.drawRect
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
-import org.oar.bytes.utils.NumbersExt.color
-import org.oar.bytes.utils.NumbersExt.toDynamicHHMMSS
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.NumbersExt.color
+import org.oar.bytes.utils.extensions.NumbersExt.toDynamicHHMMSS
 
 class HintButtonView(
     context: Context,
@@ -37,9 +38,9 @@ class HintButtonView(
         }
 
     var secondsToLoad = 1
-    val seconds = AnimatedValue(0)
+    val seconds = UiValue(0)
         .apply {
-            onValueChanged = { updateUi() }
+            observe(context as LifecycleOwner) { updateUi() }
         }
 
     private val progressRect = ColoredRect(context, this, R.color.hintsColor)

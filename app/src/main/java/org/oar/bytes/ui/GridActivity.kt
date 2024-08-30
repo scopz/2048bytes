@@ -17,9 +17,10 @@ import org.oar.bytes.ui.common.pager.FragmentPager
 import org.oar.bytes.ui.fragments.MainView
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.MAIN
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.SaveStateExt.hasState
-import org.oar.bytes.utils.SaveStateExt.loadState
-import org.oar.bytes.utils.SaveStateExt.saveState
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.SaveStateExt.hasState
+import org.oar.bytes.utils.extensions.SaveStateExt.loadState
+import org.oar.bytes.utils.extensions.SaveStateExt.saveState
 
 class GridActivity : AppCompatActivity() {
 
@@ -65,6 +66,19 @@ class GridActivity : AppCompatActivity() {
                 }
             }
         )
+
+        levelPanel.onNewLevelButtonClickListener = {
+            val expRequired = levelPanel.expRequired
+            if (Data.bytes.value >= expRequired) {
+                Data.bytes.value -= levelPanel.expRequired
+                Data.gameLevel.value++
+            }
+        }
+
+        levelPanel.onCapacityButtonClickListener = {
+            Data.bytes.value = 0.sByte
+            Data.capacity.value += Data.bytes.value
+        }
     }
 
     fun changeHeight(requestedHeight: Int = savedHeight, animate: Boolean = true, savePrevHeight: Boolean = false) {
@@ -90,7 +104,10 @@ class GridActivity : AppCompatActivity() {
         TimeController.setLastShutdownTime()
 
         val json = JSONObject()
-        json.put("gridLevel", Data.gameLevel)
+        json.put("gridLevel", Data.gameLevel.value)
+        json.put("storedValue", Data.bytes.finalValue.value.toString())
+        json.put("capacity", Data.capacity.finalValue.value.toString())
+
         TimeController.appendToJson(json)
         levelPanel.appendToJson(json)
 
@@ -118,7 +135,10 @@ class GridActivity : AppCompatActivity() {
     }
 
     private fun reloadState(json: JSONObject) {
-        Data.gameLevel = json.getInt("gridLevel")
+        Data.gameLevel.silentSetValue(json.getInt("gridLevel"))
+        Data.capacity.silentSetValue(json.getString("capacity").sByte)
+        Data.bytes.silentSetValue(json.getString("storedValue").sByte)
+
         TimeController.fromJson(json)
         runOnMainViews { fromJson(json) }
         levelPanel.fromJson(json)

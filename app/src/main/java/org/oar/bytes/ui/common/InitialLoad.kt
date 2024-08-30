@@ -4,8 +4,8 @@ import android.app.Activity
 import android.graphics.Color
 import org.oar.bytes.R
 import org.oar.bytes.utils.Constants
-import org.oar.bytes.utils.NumbersExt.color
 import org.oar.bytes.utils.ScreenProperties
+import org.oar.bytes.utils.extensions.NumbersExt.color
 
 object InitialLoad {
     fun loadData(activity: Activity) {

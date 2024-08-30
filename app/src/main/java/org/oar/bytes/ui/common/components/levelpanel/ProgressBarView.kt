@@ -11,7 +11,7 @@ import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.common.LimitedDrawFrameLayout
 import org.oar.bytes.utils.ColoredRect
 import org.oar.bytes.utils.ColoredRect.Companion.drawRect
-import org.oar.bytes.utils.NumbersExt.color
+import org.oar.bytes.utils.extensions.NumbersExt.color
 
 class ProgressBarView(
     context: Context,

@@ -18,9 +18,9 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
-import org.oar.bytes.utils.ComponentsExt.runOnUiThread
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import kotlin.math.min
 
 @SuppressLint("ClickableViewAccessibility")
@@ -49,7 +49,7 @@ class CrankView(
             if (redraw) numbRotation = numbRotation
         }
 
-    private val bytesToAdd get() = 3.sByte.double(Data.gameLevel)
+    private val bytesToAdd get() = 4.sByte.double(Data.gameLevel.value)
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_crank, this, true)
@@ -58,13 +58,15 @@ class CrankView(
 
         anim = CrankAnimation(
             this,
-            2f,
+            2.5f,
             2f
         ).apply {
             onStatsChange = { angle, speed, mMaxSpeed ->
                 this@CrankView.onStatsChange?.let { it(angle, speed, mMaxSpeed, bytesToAdd) }
             }
-            onCycle = { Data.consumeBytes(-bytesToAdd) }
+            onCycle = {
+                Data.bytes.operate { it + bytesToAdd }
+            }
         }
 
         crank.setOnTouchListener { _, event ->

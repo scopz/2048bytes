@@ -18,10 +18,10 @@ import org.json.JSONArray
 import org.oar.bytes.features.notification.NotificationService
 import org.oar.bytes.model.Device
 import org.oar.bytes.model.EnergyDevice
-import org.oar.bytes.utils.ComponentsExt.getService
 import org.oar.bytes.utils.Data
-import org.oar.bytes.utils.JsonExt.mapJsonObject
-import org.oar.bytes.utils.NumbersExt.sByte
+import org.oar.bytes.utils.extensions.ComponentsExt.getService
+import org.oar.bytes.utils.extensions.JsonExt.mapJsonObject
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 
 class InitActivity : AppCompatActivity() {
 

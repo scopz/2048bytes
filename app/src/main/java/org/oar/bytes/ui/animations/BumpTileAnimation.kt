@@ -7,7 +7,7 @@ import org.oar.bytes.utils.Constants.BUMP_COLORS
 
 class BumpTileAnimation(
     private val tile: GridTile
-) : Animation {
+) : Animation() {
     override val ref = tile
     override val blockingGrid = false
 

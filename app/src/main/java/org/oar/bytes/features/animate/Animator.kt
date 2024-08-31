@@ -7,7 +7,6 @@ import org.oar.bytes.utils.extensions.ListExt.syncAdd
 import org.oar.bytes.utils.extensions.ListExt.syncAny
 import org.oar.bytes.utils.extensions.ListExt.syncFilter
 import org.oar.bytes.utils.extensions.ListExt.syncRemoveIf
-import java.util.function.BiConsumer
 
 object Animator {
     const val END_ANIMATION = 1
@@ -21,26 +20,23 @@ object Animator {
 
     private val listeners = mutableListOf<AnimationListener>()
 
-    fun join(list: List<AnimationChain>, consumer: BiConsumer<Int, Boolean>) {
+    fun listenAnimationsEnd(list: List<AnimationChain>, consumer: (Int, Boolean) -> Unit) {
         listeners.syncAdd(AnimationListener(list, consumer))
         checkListeners()
     }
 
     fun addAndStart(chain: AnimationChain) {
-        if (!chain.hasAnimations()) return
+        if (!chain.hasNext()) return
         synchronized(animations) {
             val exists = animations.firstOrNull { it.animation.ref == chain.ref }
             if (exists != null) return
 
             chain.start()
             val animation = chain.next()!!
-            AnimationWrapper(
-                chain,
-                System.currentTimeMillis(),
-                animation
-            ).also { animations.add(it) }
-
-            animation.startAnimation()
+                .apply { pendingStart = true }
+            animations.add(
+                AnimationWrapper(chain, System.currentTimeMillis(), animation)
+            )
         }
 
         if (thread == null) {
@@ -49,7 +45,7 @@ object Animator {
     }
 
     fun addAndStart(chains: List<AnimationChain>) {
-        val addChains = chains.filter { it.hasAnimations() }
+        val addChains = chains.filter { it.hasNext() }
         if (addChains.isEmpty()) return
 
         synchronized(animations) {
@@ -63,7 +59,7 @@ object Animator {
                 .map { chain ->
                     chain.start()
                     val anim = chain.next()!!
-                    anim.startAnimation()
+                        .apply { pendingStart = true }
                     AnimationWrapper(chain, System.currentTimeMillis(), anim)
                 }
                 .also { animations.addAll(it) }
@@ -86,9 +82,9 @@ object Animator {
 
         synchronized(listeners) {
             listeners.forEach { listener ->
-                listener.consumer.accept(END_ANIMATION, true)
+                listener.consumer(END_ANIMATION, true)
                 if (listener.blocked) {
-                    listener.consumer.accept(BLOCK_CHANGED, false)
+                    listener.consumer(BLOCK_CHANGED, false)
                 }
             }
             listeners.clear()
@@ -101,40 +97,34 @@ object Animator {
     }
 
     private fun update() {
-        val removeList = mutableListOf<AnimationWrapper>()
 
-        synchronized(animations) {
-            animations.forEach {
-                val animationEnded = if (it.started) {
-                    !it.animation.nextAnimation()
-                } else {
-                    it.started = true
-                    false
-                }
+        animations.syncRemoveIf { wrapper ->
+            val animation = wrapper.animation
 
-                if (animationEnded) {
-                    it.animation.endAnimation()
-                    it.animation.applyAnimation()
-
-                    val nextAnimation = it.chain.next()
-
-                    nextAnimation?.apply {
-                        it.animation = this
-                        startAnimation()
-                        applyAnimation()
-                    }
-
-                    if (nextAnimation == null) {
-                        it.chain.end()
-                        removeList.add(it)
-                    }
-
-                } else {
-                    it.animation.applyAnimation()
-                }
+            if (animation.pendingStart) {
+                animation.pendingStart = false
+                animation.startAnimation()
             }
 
-            animations.removeAll(removeList)
+            val animationEnded = !animation.nextAnimation()
+            if (animationEnded) {
+                animation.endAnimation()
+                animation.applyAnimation()
+
+                wrapper.chain.next()
+                    ?.apply {
+                        wrapper.animation = this
+                        pendingStart = true
+                    }
+                    ?: run {
+                        wrapper.chain.end()
+                        return@syncRemoveIf true
+                    }
+
+            } else {
+                animation.applyAnimation()
+            }
+            return@syncRemoveIf false
         }
 
         checkListeners()
@@ -145,9 +135,9 @@ object Animator {
             val anims = animations.syncFilter { listener.animations.contains(it.chain) }
 
             if (anims.isEmpty()) {
-                listener.consumer.accept(END_ANIMATION, true)
+                listener.consumer(END_ANIMATION, true)
                 if (listener.blocked) {
-                    listener.consumer.accept(BLOCK_CHANGED, false)
+                    listener.consumer(BLOCK_CHANGED, false)
                 }
                 true
 
@@ -156,13 +146,13 @@ object Animator {
                     val noBlockers = anims.none { it.animation.blockingGrid }
                     if (noBlockers) {
                         listener.blocked = false
-                        listener.consumer.accept(BLOCK_CHANGED, false)
+                        listener.consumer(BLOCK_CHANGED, false)
                     }
                 } else {
                     val anyBlocker = anims.any { it.animation.blockingGrid }
                     if (anyBlocker) {
                         listener.blocked = true
-                        listener.consumer.accept(BLOCK_CHANGED, true)
+                        listener.consumer(BLOCK_CHANGED, true)
                     }
                 }
                 false

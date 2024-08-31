@@ -123,7 +123,7 @@ class GridStepsGeneratorService(
         }
 
         return stepsWrapper.apply {
-            addAnimationsChains(animations.values.filter { it.hasAnimations() })
+            addAnimationsChains(animations.values.filter { it.hasNext() })
         }
     }
 

@@ -88,6 +88,8 @@ data class SByte (
     operator fun minus(byte: SByte) = SByte(value.subtract(byte.value))
     operator fun unaryMinus() = SByte(value.negate())
     operator fun times(byte: SByte) = SByte(value.multiply(byte.value))
+    operator fun times(value: Long) = SByte(this.value.multiply(value.toBigInteger()))
+    operator fun times(value: Int) = SByte(this.value.multiply(value.toBigInteger()))
     operator fun div(byte: SByte) = SByte(value.divide(byte.value))
     operator fun compareTo(byte: SByte) = value.compareTo(byte.value)
     operator fun compareTo(value: BigInteger) = this.value.compareTo(value)

@@ -103,7 +103,7 @@ class HintButtonView(
     }
 
     private fun setSeconds(currentSeconds: Int) {
-        seconds.value = currentSeconds.coerceAtMost(secondsToLoad)
+        seconds.operate(false) { currentSeconds.coerceAtMost(secondsToLoad) }
     }
 
     override fun onDraw(canvas: Canvas) {

@@ -9,7 +9,7 @@ class HintsProgressAnimation(
     private val panelView: HintsView,
     private val secondsToAdd: Int,
     private val duration: Int,
-) : Animation {
+) : Animation() {
     override val ref = panelView
     override val blockingGrid = false
 

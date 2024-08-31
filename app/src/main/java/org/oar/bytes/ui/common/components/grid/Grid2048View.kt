@@ -377,7 +377,7 @@ class Grid2048View(
             if (chains.isNotEmpty()) {
                 enableMove = false
                 Animator.addAndStart(chains)
-                Animator.join(chains) { action, value ->
+                Animator.listenAnimationsEnd(chains) { action, value ->
                     if (Animator.BLOCK_CHANGED == action && !value) {
                         if (onProduceByteListener != null) {
                             val mergedValue = chains

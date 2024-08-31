@@ -1,5 +1,6 @@
 package org.oar.bytes.utils
 
+import android.os.Looper
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,10 +23,16 @@ open class CustomLiveData<T>(
             liveData.value = value
         }
 
-    fun postValue(value: T) =
-        liveData.postValue(value)
+    fun postValue(value: T) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            liveData.setValue(value)
+        } else {
+            liveData.postValue(value)
+            silentSetValue(value)
+        }
+    }
 
-    fun setWithoutTriggerEvent(value: T) =
+    fun silentSetValue(value: T) =
         internalDataField.set(liveData, value)
 
     fun observe(owner: LifecycleOwner, callback: (T) -> Unit) =

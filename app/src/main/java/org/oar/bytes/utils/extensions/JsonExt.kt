@@ -29,4 +29,7 @@ object JsonExt {
 
     fun JSONObject.getLongOrNull(name: String) =
         if (has(name)) getLong(name) else null
+
+    fun JSONObject.getFloatOrNull(name: String) =
+        if (has(name)) getDouble(name).toFloat() else null
 }

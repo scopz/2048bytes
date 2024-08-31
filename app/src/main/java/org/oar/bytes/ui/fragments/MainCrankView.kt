@@ -2,6 +2,7 @@ package org.oar.bytes.ui.fragments
 
 import android.content.Context
 import android.util.AttributeSet
+import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.ui.common.components.crank.CrankView
 import org.oar.bytes.ui.common.components.crankpower.CrankPowerView
@@ -39,5 +40,13 @@ class MainCrankView(
         super.onFocus()
         crank.numb = false
         crankPower.numb = false
+    }
+
+    override fun fromJson(json: JSONObject) {
+        crank.fromJson(json)
+    }
+
+    override fun appendToJson(json: JSONObject) {
+        crank.appendToJson(json)
     }
 }

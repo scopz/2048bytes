@@ -8,9 +8,9 @@
 
     <ImageView
         android:id="@+id/crank"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        android:layout_marginVertical="100dp"
+        android:layout_width="match_parent"
+        android:layout_height="400dp"
+        android:padding="100dp"
         android:src="@drawable/ic_crank_24px"/>
 
 </LinearLayout>

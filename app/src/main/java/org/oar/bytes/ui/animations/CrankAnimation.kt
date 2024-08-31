@@ -2,6 +2,7 @@ package org.oar.bytes.ui.animations
 
 import org.oar.bytes.features.animate.Animation
 import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
+import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_SET
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
@@ -13,21 +14,21 @@ import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
  * mMaxSpeed: loops per second
  */
 class CrankAnimation(
-    private val mCrankView: CrankView,
+    view: CrankView,
     private val mSlowness: Float,
     private val mMaxSpeed: Float
-) : Animation {
+) : Animation() {
     companion object {
-        private const val DECREASE_SLOWNESS = 6.5f
+        const val DECREASE_SLOWNESS = 6.5f
     }
 
-    override val ref = mCrankView
+    override val ref = view
     override val blockingGrid = false
 
-    private var mAngle = 0f
+    var angle = 0f
     private var startTime = 0L
     private var stopTime = 0L
-    private var speed = 0f
+    var speed = 0f
     private var brake = 0f
 
     var status = STOPPED
@@ -37,19 +38,24 @@ class CrankAnimation(
     lateinit var onStatsChange: (Float, Float, Float) -> Unit
 
     override fun startAnimation() {
-        startTime = when (status) {
+        when (status) {
             POWERING -> return
-            STOPPED -> System.currentTimeMillis()
+            PRE_SET -> {
+                val seconds = speed * mSlowness * 1000
+                startTime = System.currentTimeMillis() - seconds.toLong()
+                return
+            }
+            STOPPED -> startTime = System.currentTimeMillis()
             else -> {
                 val seconds = speed * mSlowness * 1000
-                System.currentTimeMillis() - seconds.toLong()
+                startTime = System.currentTimeMillis() - seconds.toLong()
             }
         }
         status = POWERING
     }
 
     override fun nextAnimation(): Boolean {
-        if (status == PRE_STOPPING) {
+        if (status == PRE_STOPPING || status == PRE_SET) {
             status = STOPPING
             stopTime = System.currentTimeMillis()
             brake = 0f
@@ -79,23 +85,27 @@ class CrankAnimation(
     }
 
     override fun applyAnimation() {
-        mAngle += speed * 360f / FRAME_RATE
-        while (mAngle >= 360) {
+        angle += speed * 360f / FRAME_RATE
+        while (angle >= 360) {
             onCycle()
-            mAngle -= 360
+            angle -= 360
         }
-        onStatsChange(mAngle, speed, mMaxSpeed)
-        mCrankView.rotation = mAngle
+        onStatsChange(angle, speed, mMaxSpeed)
     }
 
     fun stop() {
         status = PRE_STOPPING
     }
 
+    fun statusPreset() {
+        status = PRE_SET
+    }
+
     enum class Status {
         POWERING,
         PRE_STOPPING,
         STOPPING,
-        STOPPED
+        STOPPED,
+        PRE_SET,
     }
 }

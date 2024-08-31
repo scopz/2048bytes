@@ -1,9 +1,7 @@
 package org.oar.bytes.features.animate
 
-import java.util.function.BiConsumer
-
 data class AnimationListener(
     val animations: List<AnimationChain>,
-    val consumer: BiConsumer<Int, Boolean>,
+    val consumer: (Int, Boolean) -> Unit,
     var blocked: Boolean = true
 )

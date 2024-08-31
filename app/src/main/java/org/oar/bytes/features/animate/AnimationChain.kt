@@ -1,14 +1,12 @@
 package org.oar.bytes.features.animate
 
-import java.util.function.Function
-
 class AnimationChain(
     val ref: Any
 ) {
     private var startAction = mutableListOf<Runnable>()
-    private var nextAction = mutableListOf<Function<AnimationChain, Animation>>()
+    private var nextAction = mutableListOf<(AnimationChain) -> Animation>()
     private var endAction = mutableListOf<Runnable>()
-    private val extras = mutableMapOf<String, Any>()
+    private val data = mutableMapOf<String, Any>()
 
     companion object {
         fun reduce(list : List<AnimationChain>): List<AnimationChain> {
@@ -24,16 +22,16 @@ class AnimationChain(
         }
     }
 
-    fun hasAnimations() = nextAction.isNotEmpty()
+    fun hasNext() = nextAction.isNotEmpty()
 
-    fun next(next: Function<AnimationChain, Animation>): AnimationChain {
+    fun next(next: (AnimationChain) -> Animation): AnimationChain {
         this.nextAction.add(next)
         return this
     }
 
     internal fun next(): Animation? {
         if (nextAction.isNotEmpty()) {
-            return nextAction.removeAt(0).apply(this)
+            return nextAction.removeAt(0)(this)
         }
         return null
     }
@@ -57,9 +55,9 @@ class AnimationChain(
     }
 
     @Suppress("UNCHECKED_CAST")
-    operator fun <T : Any> get(key: String) = extras[key] as T?
+    operator fun <T : Any> get(key: String) = data[key] as T?
 
     operator fun set(key: String, value: Any) {
-        extras[key] = value
+        data[key] = value
     }
 }

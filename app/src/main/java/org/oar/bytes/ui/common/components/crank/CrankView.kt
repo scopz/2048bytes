@@ -9,17 +9,22 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.widget.FrameLayout
 import android.widget.ImageView
+import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
+import org.oar.bytes.features.time.TimeControlled
+import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.CrankAnimation
+import org.oar.bytes.ui.animations.CrankAnimation.Companion.DECREASE_SLOWNESS
 import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.JsonExt.getFloatOrNull
 import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import kotlin.math.min
 
@@ -27,12 +32,12 @@ import kotlin.math.min
 class CrankView(
     context: Context,
     attrs: AttributeSet? = null
-) : FrameLayout(context, attrs) {
+) : FrameLayout(context, attrs), TimeControlled {
 
     private var anim: CrankAnimation
     var onStatsChange: ((Float, Float, Float, SByte) -> Unit)? = null
 
-    private var numbRotation: Float = 0f
+    private var angle: Float = 0f
         set(value) {
             if (!numb) {
                 runOnUiThread {
@@ -42,31 +47,37 @@ class CrankView(
             field = value
         }
 
+    private var speed = 0f
     var numb = true
         set(value) {
             val redraw = field && !value
             field = value
-            if (redraw) numbRotation = numbRotation
+            if (redraw) angle = angle
         }
 
     private val bytesToAdd get() = 4.sByte.double(Data.gameLevel.value)
 
+    private val crank by lazy { findViewById<ImageView>(R.id.crank) }
+
     init {
         LayoutInflater.from(context).inflate(R.layout.component_crank, this, true)
-
-        val crank = findViewById<ImageView>(R.id.crank)
+        TimeController.register(0, 1, this)
+        TimeController.startTimeData(0, 1, true)
 
         anim = CrankAnimation(
             this,
             2.5f,
             2f
         ).apply {
-            onStatsChange = { angle, speed, mMaxSpeed ->
-                this@CrankView.onStatsChange?.let { it(angle, speed, mMaxSpeed, bytesToAdd) }
-            }
             onCycle = {
                 Data.bytes.operate { it + bytesToAdd }
             }
+        }
+
+        anim.onStatsChange = { angle, speed, mMaxSpeed ->
+            this.angle = angle
+            this.speed = speed
+            this.onStatsChange?.let { it(angle, speed, mMaxSpeed, bytesToAdd) }
         }
 
         crank.setOnTouchListener { _, event ->
@@ -101,7 +112,52 @@ class CrankView(
         }
     }
 
-    override fun setRotation(rotation: Float) {
-        numbRotation = rotation
+
+    fun appendToJson(json: JSONObject) {
+        json.apply {
+            put("crankAngle", angle)
+            put("crankSpeed", speed)
+        }
+    }
+
+    fun fromJson(json: JSONObject) {
+        angle = json.getFloatOrNull("crankAngle") ?: 0f
+        speed = json.getFloatOrNull("crankSpeed") ?: 0f
+        anim.angle = angle
+    }
+
+    override fun notifyOfflineTime(
+        newStartTime: Long,
+        relShutdownTime: Long,
+        timePassed: Long
+    ): Boolean {
+
+        val timePassedSeconds = (timePassed / 1000.0)
+            .coerceAtMost(DECREASE_SLOWNESS * speed.toDouble())
+
+        val speedToSubtract = (timePassedSeconds / DECREASE_SLOWNESS)
+        val newSpeed = (speed - speedToSubtract).coerceAtLeast(0.0)
+
+        val meanSpeed = (speed + newSpeed)/2
+        val totalLoops = meanSpeed * timePassedSeconds
+        val finalAngle = totalLoops * 360 + angle
+
+        angle = (finalAngle % 360).toFloat()
+        anim.angle = angle
+        val countingLoops = (finalAngle/360).toInt()
+
+        if (countingLoops > 0) {
+            Data.bytes.operate { it + bytesToAdd * countingLoops }
+        }
+
+        if (newSpeed > 0) {
+            anim.speed = newSpeed.toFloat()
+            anim.statusPreset()
+            Animator.addAndStart(
+                AnimationChain(crank).next { anim }
+            )
+        }
+
+        return true
     }
 }

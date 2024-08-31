@@ -10,6 +10,7 @@ import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.features.notification.NotificationService.clearScheduledNotifications
 import org.oar.bytes.features.time.TimeController
+import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.ResizeHeightAnimation
 import org.oar.bytes.ui.common.InitialLoad
 import org.oar.bytes.ui.common.components.levelpanel.LevelPanelView
@@ -70,14 +71,15 @@ class GridActivity : AppCompatActivity() {
         levelPanel.onNewLevelButtonClickListener = {
             val expRequired = levelPanel.expRequired
             if (Data.bytes.value >= expRequired) {
-                Data.bytes.value -= levelPanel.expRequired
-                Data.gameLevel.value++
+                Data.bytes.operate { it - levelPanel.expRequired }
+                Data.gameLevel.operate { it + 1 }
             }
         }
 
         levelPanel.onCapacityButtonClickListener = {
-            Data.bytes.value = 0.sByte
-            Data.capacity.value += Data.bytes.value
+            val bytes = Data.bytes.value
+            Data.bytes.operate { SByte.ZERO }
+            Data.capacity.operate { it + bytes }
         }
     }
 
@@ -135,13 +137,13 @@ class GridActivity : AppCompatActivity() {
     }
 
     private fun reloadState(json: JSONObject) {
-        Data.gameLevel.silentSetValue(json.getInt("gridLevel"))
-        Data.capacity.silentSetValue(json.getString("capacity").sByte)
-        Data.bytes.silentSetValue(json.getString("storedValue").sByte)
+        Data.gameLevel.silentOperate { json.getInt("gridLevel") }
+        Data.capacity.silentOperate { json.getString("capacity").sByte }
+        Data.bytes.silentOperate { json.getString("storedValue").sByte }
 
-        TimeController.fromJson(json)
         runOnMainViews { fromJson(json) }
         levelPanel.fromJson(json)
+        TimeController.fromJson(json)
     }
 
     private fun runOnMainViews(function: MainView.() -> Unit) {

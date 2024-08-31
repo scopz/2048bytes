@@ -10,6 +10,7 @@ import org.oar.bytes.features.animate.AnimationChain
 import org.oar.bytes.features.animate.Animator
 import org.oar.bytes.features.notification.NotificationChannel
 import org.oar.bytes.features.notification.NotificationService.scheduleNotification
+import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.HintsProgressAnimation
 import org.oar.bytes.ui.animations.LevelProgressAnimation
 import org.oar.bytes.ui.animations.WaitAnimation
@@ -28,7 +29,6 @@ import org.oar.bytes.ui.fragments.MainView.MainDefinition.CRANK
 import org.oar.bytes.ui.fragments.MainView.MainDefinition.SETTINGS
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.extensions.ComponentsExt.calculatedHeight
-import org.oar.bytes.utils.extensions.NumbersExt.sByte
 
 class MainGridView(
     context: Context,
@@ -136,7 +136,7 @@ class MainGridView(
         grid.setOnLongClickListener {
             ConfirmDialog.show(context, R.string.title_confirm, R.string.restart_confirm, {
                 Animator.stopAll()
-                Data.bytes.value = 0.sByte
+                Data.bytes.operate { SByte.ZERO }
                 grid.restart()
             })
             true

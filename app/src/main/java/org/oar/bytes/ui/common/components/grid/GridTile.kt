@@ -43,7 +43,6 @@ open class GridTile(
         set(value) {
             field = value
             val color = if (value == Color.BLACK) levelColor else value
-            println("######### $level - $levelColor")
             valueView.setBackgroundColor(color)
         }
 
@@ -52,7 +51,6 @@ open class GridTile(
         val measuredHeight = View.MeasureSpec.makeMeasureSpec(size, View.MeasureSpec.EXACTLY)
         view.measure(measureWidth, measuredHeight)
         view.layout(0, 0, size, size)
-        println("######### $level - $levelColor (init)")
         valueView.setBackgroundColor(levelColor)
         valueView.text = value.toString()
     }

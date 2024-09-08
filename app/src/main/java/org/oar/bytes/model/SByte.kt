@@ -91,6 +91,7 @@ data class SByte (
     operator fun times(value: Long) = SByte(this.value.multiply(value.toBigInteger()))
     operator fun times(value: Int) = SByte(this.value.multiply(value.toBigInteger()))
     operator fun div(byte: SByte) = SByte(value.divide(byte.value))
+    operator fun div(value: Int) = SByte(this.value.divide(value.toBigInteger()))
     operator fun compareTo(byte: SByte) = value.compareTo(byte.value)
     operator fun compareTo(value: BigInteger) = this.value.compareTo(value)
     fun coerceAtMost(other: SByte) = value.coerceAtMost(other.value).sByte

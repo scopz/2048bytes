@@ -37,10 +37,10 @@ class CrankPowerView(
     private val progressRect = ColoredRect(context, this, R.color.crankColor)
 
     private val textView by lazy { findViewById<TextView>(R.id.mainText) }
+    private val subTextView by lazy { findViewById<TextView>(R.id.secondaryText) }
 
     init {
         LayoutInflater.from(context).inflate(R.layout.component_progress_bar, this, true)
-        findViewById<TextView>(R.id.secondaryText).visibility = GONE
 
         setBackgroundColor(R.color.itemDefaultBackground.color(context))
     }
@@ -59,6 +59,12 @@ class CrankPowerView(
                 this.textView.text = text
             }
             label = percent
+        }
+    }
+
+    fun setSubText(text: String) {
+        runOnUiThread {
+            this.subTextView.text = text
         }
     }
 

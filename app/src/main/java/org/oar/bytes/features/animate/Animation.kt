@@ -1,8 +1,9 @@
 package org.oar.bytes.features.animate
 
-abstract class Animation {
-    abstract val ref: Any
-    open val blockingGrid = true
+abstract class Animation(
+    val ref: Any,
+    val blockingGrid: Boolean
+) {
     var pendingStart = true
 
     abstract fun startAnimation()

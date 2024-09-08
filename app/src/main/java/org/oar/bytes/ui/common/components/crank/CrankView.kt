@@ -9,6 +9,7 @@ import android.view.MotionEvent.ACTION_MOVE
 import android.view.MotionEvent.ACTION_UP
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.lifecycle.LifecycleOwner
 import org.json.JSONObject
 import org.oar.bytes.R
 import org.oar.bytes.features.animate.AnimationChain
@@ -22,10 +23,16 @@ import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPING
+import org.oar.bytes.utils.Constants
 import org.oar.bytes.utils.Data
 import org.oar.bytes.utils.extensions.ComponentsExt.runOnUiThread
+import org.oar.bytes.utils.extensions.JsonExt.getBigByteOrNull
 import org.oar.bytes.utils.extensions.JsonExt.getFloatOrNull
 import org.oar.bytes.utils.extensions.NumbersExt.sByte
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import kotlin.math.min
 
 @SuppressLint("ClickableViewAccessibility")
@@ -36,6 +43,7 @@ class CrankView(
 
     private var anim: CrankAnimation
     var onStatsChange: ((Float, Float, Float, SByte) -> Unit)? = null
+    var onCapacityChange: ((SByte) -> Unit)? = null
 
     private var angle: Float = 0f
         set(value) {
@@ -55,6 +63,7 @@ class CrankView(
             if (redraw) angle = angle
         }
 
+    private var capacity = SByte.ZERO
     private val bytesToAdd get() = 4.sByte.double(Data.gameLevel.value)
 
     private val crank by lazy { findViewById<ImageView>(R.id.crank) }
@@ -64,13 +73,32 @@ class CrankView(
         TimeController.register(0, 1, this)
         TimeController.startTimeData(0, 1, true)
 
+        Data.capacity.observe(context as LifecycleOwner) { (prev, value) ->
+            if (prev.isBiggerThanZero) {
+                capacity += (value - prev) / 3
+            }
+            onCapacityChange?.let { it(capacity) }
+        }
+
+        Data.gameLevel.observe(context) {(prev, value) ->
+            if (prev > 0) {
+                capacity += (Constants.LEVEL_EXP[value] - Constants.LEVEL_EXP[prev]) / 3
+            }
+            onCapacityChange?.let { it(capacity) }
+        }
+
         anim = CrankAnimation(
             this,
-            2.5f,
-            2f
+            5f,
+            1f
         ).apply {
             onCycle = {
-                Data.bytes.operate { it + bytesToAdd }
+                val addBytes = bytesToAdd.coerceAtMost(capacity)
+                if (addBytes.isBiggerThanZero) {
+                    Data.bytes.operate { it + addBytes }
+                    capacity -= addBytes
+                    onCapacityChange?.let { it(capacity) }
+                }
             }
         }
 
@@ -117,12 +145,14 @@ class CrankView(
         json.apply {
             put("crankAngle", angle)
             put("crankSpeed", speed)
+            put("crankCapacity", capacity.value.toString())
         }
     }
 
     fun fromJson(json: JSONObject) {
         angle = json.getFloatOrNull("crankAngle") ?: 0f
         speed = json.getFloatOrNull("crankSpeed") ?: 0f
+        capacity = json.getBigByteOrNull("crankCapacity") ?: SByte.ZERO
         anim.angle = angle
     }
 
@@ -131,6 +161,22 @@ class CrankView(
         relShutdownTime: Long,
         timePassed: Long
     ): Boolean {
+        if (capacity < Data.capacity.value) {
+            ChronoUnit.DAYS
+                .between(
+                    Instant.ofEpochMilli(System.currentTimeMillis() - timePassed)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate(),
+                    LocalDate.now()
+                )
+                .toInt()
+                .takeIf { it > 0 }
+                ?.also { days ->
+                    val levelCap = Data.capacity.value
+                    val extraCap = levelCap * days / 8
+                    capacity = (capacity + extraCap).coerceAtMost(levelCap)
+                }
+        }
 
         val timePassedSeconds = (timePassed / 1000.0)
             .coerceAtMost(DECREASE_SLOWNESS * speed.toDouble())
@@ -147,7 +193,12 @@ class CrankView(
         val countingLoops = (finalAngle/360).toInt()
 
         if (countingLoops > 0) {
-            Data.bytes.operate { it + bytesToAdd * countingLoops }
+            val addBytes = (bytesToAdd * countingLoops).coerceAtMost(capacity)
+            if (addBytes.isBiggerThanZero) {
+                Data.bytes.operate { it + addBytes }
+                capacity -= addBytes
+                onCapacityChange?.let { it(capacity) }
+            }
         }
 
         if (newSpeed > 0) {

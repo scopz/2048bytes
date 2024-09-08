@@ -5,9 +5,7 @@ import org.oar.bytes.features.animate.Animation
 class WaitAnimation(
     private val value: Long,
     block: Boolean = false
-) : Animation() {
-    override val ref = this
-    override val blockingGrid = block
+) : Animation(value, block) {
 
     private var freeTime = value
 

@@ -28,6 +28,10 @@ class MainCrankView(
             val bytesPerSecond = bytes.value.toBigDecimal() * speed.toBigDecimal()
             crankPower.setData("${bytesPerSecond.sByte}/s", speed / mMaxSpeed)
         }
+
+        crank.onCapacityChange = {
+            crankPower.setSubText(it.toString())
+        }
     }
 
     override fun onBlur() {

@@ -4,10 +4,11 @@ import androidx.lifecycle.LifecycleOwner
 import org.oar.bytes.utils.CustomLiveData
 
 class UiValue<T> (
-    initValue: T
+    initValue: T,
+    prevValue: T = initValue
 ): Cloneable {
     private var futureValue: T? = null
-    private val _internalValue = CustomLiveData(initValue)
+    private val _internalValue = CustomLiveData(initValue, prevValue)
 
     var limit: (T) -> T = { it }
 
@@ -23,7 +24,7 @@ class UiValue<T> (
             futureValue = limit(value)
         }
 
-    fun observe(owner: LifecycleOwner, callback: (T) -> Unit) =
+    fun observe(owner: LifecycleOwner, callback: (Pair<T, T>) -> Unit) =
         _internalValue.observe(owner, callback)
 
     fun clearFinal() {

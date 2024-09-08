@@ -12,9 +12,7 @@ class LevelProgressAnimation(
     view: View,
     bytesToAdd: SByte,
     private val duration: Int,
-) : Animation() {
-    override val ref = view
-    override val blockingGrid = false
+) : Animation(view, false) {
 
     private val initValue = Data.bytes.value
     private val diff = (bytesToAdd + initValue).coerceAtMost(Data.capacity.value) - initValue

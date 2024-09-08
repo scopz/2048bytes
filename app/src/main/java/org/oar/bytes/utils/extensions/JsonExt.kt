@@ -2,6 +2,7 @@ package org.oar.bytes.utils.extensions
 
 import org.json.JSONArray
 import org.json.JSONObject
+import org.oar.bytes.utils.extensions.NumbersExt.sByte
 
 object JsonExt {
     fun <T> Collection<T>.jsonArray() = JSONArray().also { this.forEach { obj -> it.put(obj) } }
@@ -32,4 +33,7 @@ object JsonExt {
 
     fun JSONObject.getFloatOrNull(name: String) =
         if (has(name)) getDouble(name).toFloat() else null
+
+    fun JSONObject.getBigByteOrNull(name: String) =
+        getStringOrNull(name)?.sByte
 }

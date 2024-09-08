@@ -9,9 +9,7 @@ class HintsProgressAnimation(
     private val panelView: HintsView,
     private val secondsToAdd: Int,
     private val duration: Int,
-) : Animation() {
-    override val ref = panelView
-    override val blockingGrid = false
+) : Animation(panelView, false) {
 
     private val diffs = panelView.hints.map {
         (secondsToAdd + it.seconds.value).coerceAtMost(it.secondsToLoad) - it.seconds.value

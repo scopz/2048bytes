@@ -11,9 +11,7 @@ class ResizeHeightAnimation(
     private val mHeight: Int,
     private val duration: Int,
     private val runOnUiThread: KFunction1<Runnable, Unit>,
-) : Animation() {
-    override val ref = mView
-    override val blockingGrid = true
+) : Animation(mView, true) {
 
     private val mStartHeight = mView.height
     private var startTime = 0L

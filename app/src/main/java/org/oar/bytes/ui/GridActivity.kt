@@ -46,9 +46,15 @@ class GridActivity : AppCompatActivity() {
         if (hasState()) {
             loadState()
                 ?.also { reloadState(it) }
-                ?: runOnMainViews { newGame() }
+                ?: run {
+                    runOnMainViews { newGame() }
+                    Data.capacity.silentOperate { 256.sByte }
+                    Data.gameLevel.silentOperate { 1 }
+                }
         } else {
             runOnMainViews { newGame() }
+            Data.capacity.silentOperate { 256.sByte }
+            Data.gameLevel.silentOperate { 1 }
         }
 
         pager.onHeightChange = { height, animate -> changeHeight(height, animate) }

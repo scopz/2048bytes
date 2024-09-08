@@ -44,13 +44,13 @@ class LevelPanelView(
         Data.bytes.observe(context as LifecycleOwner) {
             updateUi()
         }
-        Data.capacity.observe(context) {
+        Data.capacity.observe(context) { (_, value) ->
             if (capacityReached) {
                 capacityReached = false
                 onCapacityReachedListener?.let { it(false) }
             }
             runOnUiThread {
-                progressBar.setCapacityProgress(Data.bytes.value, it)
+                progressBar.setCapacityProgress(Data.bytes.value, value)
             }
         }
         Data.gameLevel.observe(context) {
@@ -59,7 +59,7 @@ class LevelPanelView(
                 onNewLevelReachedListener?.let { it(false) }
             }
             runOnUiThread {
-                levelUpButton.text = it.toString()
+                levelUpButton.text = it.second.toString()
             }
         }
 

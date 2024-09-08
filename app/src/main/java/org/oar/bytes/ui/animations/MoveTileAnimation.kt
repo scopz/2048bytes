@@ -9,8 +9,7 @@ class MoveTileAnimation(
     private val tile: GridTile,
     destiny: Position,
     private val speed: Int
-) : Animation() {
-    override val ref = tile
+) : Animation(tile, true) {
 
     private var pointX: Int = tile.pos.x * tile.size
     private var pointY: Int = tile.pos.y * tile.size

@@ -42,6 +42,7 @@ import org.oar.bytes.utils.extensions.NumbersExt.color
 import org.oar.bytes.utils.extensions.NumbersExt.sByte
 import java.util.*
 import java.util.function.Consumer
+import kotlin.math.max
 
 class Grid2048View(
     context: Context,
@@ -49,7 +50,7 @@ class Grid2048View(
 ) : LimitedDrawView(context, attrs) {
 
     private val baseByteValue
-        get() = 1.sByte.double(Data.gameLevel.value-1)
+        get() = 1.sByte.double(max(Data.gameLevel.value-1, 0))
 
     private var currentGameLevel: Int = 1
     private var tileSize: Int = 0

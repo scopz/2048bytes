@@ -1,7 +1,6 @@
 package org.oar.bytes.ui
 
 import android.Manifest.permission.POST_NOTIFICATIONS
-import android.R
 import android.app.ActivityOptions.makeCustomAnimation
 import android.app.AlarmManager
 import android.content.Intent
@@ -13,6 +12,7 @@ import android.os.HandlerThread
 import android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat.checkSelfPermission
 import org.json.JSONArray
 import org.oar.bytes.features.notification.NotificationService
@@ -38,6 +38,8 @@ class InitActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
         supportRequestWindowFeature(Window.FEATURE_NO_TITLE)
 
         loadAssets()
@@ -66,7 +68,7 @@ class InitActivity : AppCompatActivity() {
         }
 
         val intent = Intent(this, GridActivity::class.java)
-        val options = makeCustomAnimation(this, R.anim.fade_in, R.anim.fade_out)
+        val options = makeCustomAnimation(this, android.R.anim.fade_in, android.R.anim.fade_out)
         startActivity(intent, options.toBundle())
         finish()
     }

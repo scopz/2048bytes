@@ -42,6 +42,7 @@ object TimeController {
     }
 
     fun notifyOfflineTime(context: Context) {
+        if (lastShutdownTime <= 0) return
         val currentTime = System.currentTimeMillis()
         val offlineTimePassed = currentTime - lastShutdownTime
 

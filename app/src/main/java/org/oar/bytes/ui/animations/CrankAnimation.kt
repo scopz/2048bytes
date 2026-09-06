@@ -10,18 +10,21 @@ import org.oar.bytes.ui.common.components.crank.CrankView
 import org.oar.bytes.utils.ScreenProperties.FRAME_RATE
 
 /**
- * mSlowness: time to reach 1 speed
- * mMaxSpeed: loops per second
+ * increaseSpeed: time to increase "1 loop per second"
+ * maxSpeed: loops per second
+ *
+ * DECREASE_SPEED: time to stop "1 loop per second"
+ * FREEZE_TIMEOUT_MS: amount of seconds where no decrease is applied
  */
 class CrankAnimation(
     view: CrankView,
-    private val increaseSlowness: Float,
+    private val increaseSpeed: Float,
     private val maxSpeed: Float
 ) : Animation(view, false) {
 
     companion object {
-        const val DECREASE_SLOWNESS = 32f
-        const val FREEZE_TIMEOUT_MS = 6000
+        const val DECREASE_SPEED = 30f
+        const val FREEZE_TIMEOUT_MS = 5500
     }
 
     var angle = 0f
@@ -40,13 +43,13 @@ class CrankAnimation(
         when (status) {
             POWERING -> return
             PRE_SET -> {
-                val seconds = speed * increaseSlowness * 1000
+                val seconds = speed * increaseSpeed * 1000
                 startTime = System.currentTimeMillis() - seconds.toLong()
                 return
             }
             STOPPED -> startTime = System.currentTimeMillis()
             else -> {
-                val seconds = speed * increaseSlowness * 1000
+                val seconds = speed * increaseSpeed * 1000
                 startTime = System.currentTimeMillis() - seconds.toLong()
             }
         }
@@ -62,14 +65,14 @@ class CrankAnimation(
 
         return when (status) {
             POWERING -> {
-                val x = (System.currentTimeMillis() - startTime) / (increaseSlowness * 1000)
+                val x = (System.currentTimeMillis() - startTime) / (increaseSpeed * 1000)
                 speed = x.coerceAtMost(maxSpeed)
                 true
             }
             STOPPING -> {
                 val time = System.currentTimeMillis() - stopTime - FREEZE_TIMEOUT_MS
                 if (time > 0) {
-                    val x = time / (DECREASE_SLOWNESS * 1000)
+                    val x = time / (DECREASE_SPEED * 1000)
                     speed -= (x - brake).also { brake += it }
                     speed > 0
                 } else true

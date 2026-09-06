@@ -14,7 +14,7 @@ class TimePreference(
     override fun onClick() {
         SelectTimeDialogFragment(
             title = R.string.dialog_time_title,
-            startTime = text,
+            startTime = text ?: "",
             confirm = {
                 text = it
             })

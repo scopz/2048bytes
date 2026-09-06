@@ -18,7 +18,7 @@ import org.oar.bytes.features.time.TimeControlled
 import org.oar.bytes.features.time.TimeController
 import org.oar.bytes.model.SByte
 import org.oar.bytes.ui.animations.CrankAnimation
-import org.oar.bytes.ui.animations.CrankAnimation.Companion.DECREASE_SLOWNESS
+import org.oar.bytes.ui.animations.CrankAnimation.Companion.DECREASE_SPEED
 import org.oar.bytes.ui.animations.CrankAnimation.Status.POWERING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.PRE_STOPPING
 import org.oar.bytes.ui.animations.CrankAnimation.Status.STOPPED
@@ -82,15 +82,15 @@ class CrankView(
 
         Data.gameLevel.observe(context) {(prev, value) ->
             if (prev > 0) {
-                capacity += (Constants.LEVEL_EXP[value] - Constants.LEVEL_EXP[prev]) / 3
+                capacity += (Constants.LEVEL_EXP[value-1] - Constants.LEVEL_EXP[prev-1]) / 3
             }
             onCapacityChange?.let { it(capacity) }
         }
 
         anim = CrankAnimation(
-            this,
-            5f,
-            1f
+            view = this,
+            increaseSpeed = 4f,
+            maxSpeed = 1f
         ).apply {
             onCycle = {
                 val addBytes = bytesToAdd.coerceAtMost(capacity)
@@ -179,9 +179,9 @@ class CrankView(
         }
 
         val timePassedSeconds = (timePassed / 1000.0)
-            .coerceAtMost(DECREASE_SLOWNESS * speed.toDouble())
+            .coerceAtMost(DECREASE_SPEED * speed.toDouble())
 
-        val speedToSubtract = (timePassedSeconds / DECREASE_SLOWNESS)
+        val speedToSubtract = (timePassedSeconds / DECREASE_SPEED)
         val newSpeed = (speed - speedToSubtract).coerceAtLeast(0.0)
 
         val meanSpeed = (speed + newSpeed)/2
